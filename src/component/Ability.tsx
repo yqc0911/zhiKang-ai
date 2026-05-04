@@ -2,11 +2,16 @@
 import { Card } from 'antd';
 
 const { Meta } = Card;
-const Ability = () => {
+
+interface AbilityProps {
+    titleContent?: string;
+}
+
+const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
     return (
         <div className="mx-auto mt-8">
             <div className="title font-bold text-center tracking-[.5rem]">
-                核心功能
+                {titleContent}
             </div>
             <div className="abilityBox flex justify-between mt-8">
                 {/* 标签一 */}
