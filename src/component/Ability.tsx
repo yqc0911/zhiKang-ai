@@ -13,7 +13,7 @@ const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
             <div className="title font-bold text-center tracking-[.5rem]">
                 {titleContent}
             </div>
-            <div className="abilityBox flex justify-between mt-8">
+            <div className="abilityBox flex justify-between mt-8 mb-8">
                 {/* 标签一 */}
                 <Card
                     className='w-[280px] h-[164px] overflow-hidden'

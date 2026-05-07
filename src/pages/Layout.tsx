@@ -3,7 +3,8 @@
 //引入HomePage组件
 import Ability from "../component/Ability"
 import Banner from "../component/Banner"
-import HomePage from "./HomePage"
+import HomePage from "../component/HomePage"
+import Footer from "../component/Footer"
 
 const Layout = () => {
     return (
@@ -13,7 +14,9 @@ const Layout = () => {
                 <Banner />
                 <Ability />
                 <Ability titleContent="健康科普资讯" />
+                
             </div>
+            <Footer />
         </>
     )
 }
