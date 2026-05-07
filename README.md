@@ -1,75 +1,92 @@
-# React + TypeScript + Vite
+一、项目概述
+1.项目背景
+传统线下问诊排队久、医疗资源分布不均、轻症没必要去医院；随着大模型 AI 发展，依托智能对话、智能分诊、症状自查、在线咨询，打造AI 智能问诊系统。
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+用户输入症状，系统自动：
+● 智能匹配病症
+● 给出病因、建议用药、生活建议
+● 分级问诊（轻症自查、在线医生咨询）
+● 健康档案管理、历史问诊记录
+2.项目目标
+● 实现AI 大模型智能问诊对话
+● 症状自查、疾病推荐、用药建议
+● 用户登录注册、个人健康档案
+● 问诊记录保存、历史记录查询
+● 后台管理员：用户管理、问诊记录管理、内容审核
+二、技术选型
+前端
+● 框架：React19 + Vite
+● UI 组件：Ant Design 
+● 样式：Tailwind CSS
+● 状态管理：Redux
+● 网络请求：Axios
+● 聊天气泡：封装聊天会话组件
+● 适配：PC 端管理后台 + 用户前台
+后端
+● 框架：Node.js + Express
+● 数据库：PostgreSQL + Redis
+● AI 能力：调用通义千问
+● 权限：JWT 登录认证
+● 存储：问诊记录、用户健康档案、疾病库
+三、系统功能模块设计
+1. 用户端功能
+● 登录 / 注册：手机号、账号密码、JWT 鉴权
+● AI 智能问诊
+● 文字输入症状
+● AI 大模型自动分析病情
+● 返回：可能疾病、病因、建议科室、用药建议、生活禁忌
+● 症状自查：按部位 / 症状选择，快速匹配疾病
+● 问诊历史记录：保存每一次 AI 问诊，可回看、删除
+● 个人健康档案：年龄、性别、既往病史、过敏史
+● 健康科普资讯：疾病常识、养生推荐
+四、系统架构设计
+1.前端展示层
+● 用户前台、管理后台、聊天会话页面、个人中心
+后端服务层
+● 登录认证模块
+● AI 问诊接口模块
+● 用户档案模块
+● 记录管理模块
+● 科普资讯模块
+数据层
+● PostgreSQL：用户表、问诊记录表、疾病表、科普文章表
+● Redis：缓存 AI 接口结果、登录 Token、热门症状
 
-Currently, two official plugins are available:
+架构流程图
+用户前端请求 → 后端接口 → 鉴权校验 → 组装提示词 → 调用大模型 API → 返回 AI 问诊结果 → 存入数据库 → 前端渲染聊天界面
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+五、数据库核心表设计
+1. 用户表 user
+id、用户名、密码、手机号、性别、年龄、过敏史、既往病史、创建时间
+2. 问诊记录表 ai_consult
+id、用户 id、用户症状描述、AI 回复内容、问诊时间、状态
+3. 疾病表 disease
+id、疾病名称、所属科室、常见症状、病因、推荐药物、生活建议、禁忌
+4. 科普文章表 health_article
+id、标题、内容、封面图、发布时间、状态
 
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+六、核心功能实现
+1. 前端 AI 问诊聊天界面
+● 对话气泡布局：左侧 AI、右侧用户
+● 输入框回车发送请求
+● 加载动画：AI 正在问诊中...
+2. 后端对接大模型核心逻辑
+1. 接收前端传入的用户症状
+2. 拼接固定 Prompt：
+你是专业内科医生，根据用户症状分析：可能疾病、病因、建议科室、居家建议、用药提示，禁止给出处方药剂量，提醒重症及时就医 用户症状：xxx
+3. 调用大模型 API
+4. 返回结果给前端，同时存入问诊记录数据库
+3. 安全约束
+● AI 回复强制加免责声明：仅为 AI 参考，不替代执业医师诊断，病重请及时线下就医
+● 禁止生成违禁用药、精准处方
+七、系统亮点
+● 基于大模型自然语言智能问诊，不是固定模板匹配
+● 完整前后端分离，可直接部署上线
+● 带健康档案、历史记录、科普资讯完整闭环
+● 管理员后台可管控所有数据，适合商用 / 毕设
+● 响应式布局，支持 PC 端完整使用
+八、可扩展升级
+● 增加医生在线接单问诊
+● 语音问诊（语音转文字发给 AI）
+● 病情图表统计、健康周报
+● 小程序端适配
