@@ -9,8 +9,8 @@ const HomePage = () => {
   const menuItems = [
     { key: 'home', label: '首页' },
     { key: 'ai', label: 'AI问诊', path: '/health-ai' },
-    { key: 'symptoms', label: '症状自查' },
-    { key: 'health', label: '健康科普' },
+    { key: 'symptoms', label: '症状自查', path: '/symptom-self-check' },
+    { key: 'health', label: '健康科普', path: '/health-tips' },
   ]
 
   return (
