@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button, Card, Input, Tag } from 'antd'
-import { ArrowLeftOutlined, ReadOutlined, SearchOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { ReadOutlined, SearchOutlined } from '@ant-design/icons'
+import HomePage from '../component/HomePage'
 
 type TipCategory = '全部' | '养生' | '疾病预防' | '饮食营养' | '心理健康'
 
@@ -59,7 +59,6 @@ const healthArticles = [
 ]
 
 const HealthTipsPage = () => {
-    const navigate = useNavigate()
     const [keyword, setKeyword] = useState('')
     const [activeCategory, setActiveCategory] = useState<TipCategory>('全部')
 
@@ -72,28 +71,26 @@ const HealthTipsPage = () => {
     }, [activeCategory, keyword])
 
     return (
-        <div className="h-screen overflow-hidden bg-gradient-to-b from-emerald-50 to-white flex flex-col">
-            <div className="bg-white shadow-sm py-4 px-8 flex items-center flex-none">
-                <button className="mr-4 text-gray-600 hover:text-blue-600" onClick={() => navigate('/')}>
-                    <ArrowLeftOutlined />
-                </button>
-                <h1 className="text-xl font-semibold">健康科普</h1>
+        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
+            <div className="flex-none">
+                <HomePage />
             </div>
 
-            <div className="flex-1 overflow-hidden px-8 py-6">
-                <div className="h-full grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6">
-                    <Card className="h-full overflow-hidden">
+            <div className="flex-1 overflow-hidden px-4 py-4">
+                <div className="mx-auto grid h-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                    <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
                         <div className="h-full flex flex-col gap-5 overflow-hidden">
                             <div>
-                                <div className="text-3xl font-bold text-gray-800">健康科普资讯</div>
-                                <div className="text-gray-500 mt-2">精选健康知识，帮助你形成更好的生活习惯</div>
+                                <div className="text-3xl font-bold text-slate-800">健康科普资讯</div>
+                                <div className="text-slate-500 mt-2">精选健康知识，帮助你形成更好的生活习惯</div>
                             </div>
 
                             <Input
                                 value={keyword}
                                 onChange={(e) => setKeyword(e.target.value)}
                                 placeholder="搜索文章标题或内容"
-                                prefix={<SearchOutlined className="text-gray-400" />}
+                                prefix={<SearchOutlined className="text-slate-400" />}
+                                className="rounded-xl"
                             />
 
                             <div className="flex flex-wrap gap-2">
@@ -101,7 +98,7 @@ const HealthTipsPage = () => {
                                     <Tag
                                         key={category}
                                         color={activeCategory === category ? 'blue' : 'default'}
-                                        className="px-3 py-1 cursor-pointer text-base leading-6"
+                                        className="px-3 py-1 cursor-pointer text-base leading-6 rounded-full"
                                         onClick={() => setActiveCategory(category)}
                                     >
                                         {category}
@@ -111,18 +108,18 @@ const HealthTipsPage = () => {
 
                             <div className="flex-1 overflow-auto pr-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {filteredArticles.map((article) => (
-                                    <Card key={article.id} hoverable className="h-full">
+                                    <Card key={article.id} hoverable className="h-full rounded-2xl border-slate-200/80 shadow-sm">
                                         <div className="flex items-start gap-3">
                                             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-none">
                                                 <ReadOutlined />
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="text-lg font-semibold text-gray-800">{article.title}</div>
-                                                <div className="text-sm text-gray-500 mt-1">{article.time}</div>
+                                                <div className="text-lg font-semibold text-slate-800">{article.title}</div>
+                                                <div className="text-sm text-slate-500 mt-1">{article.time}</div>
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 text-gray-600 leading-7">{article.summary}</div>
+                                        <div className="mt-4 text-slate-600 leading-7">{article.summary}</div>
 
                                         <div className="mt-4 flex flex-wrap gap-2">
                                             {article.tags.map((tag) => (
@@ -136,24 +133,24 @@ const HealthTipsPage = () => {
                     </Card>
 
                     <div className="h-full flex flex-col gap-6 overflow-hidden">
-                        <Card className="flex-none">
-                            <div className="text-xl font-semibold text-gray-800">今日推荐</div>
+                        <Card className="flex-none rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+                            <div className="text-xl font-semibold text-slate-800">今日推荐</div>
                             <div className="mt-4 space-y-3">
-                                <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-4 text-gray-700">
+                                <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-slate-700">
                                     保持规律作息，能有效改善免疫状态与精神状态。
                                 </div>
-                                <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-gray-700">
+                                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-slate-700">
                                     每天饮水 1500ml 左右，有助于维持身体代谢与循环。
                                 </div>
                             </div>
                         </Card>
 
-                        <Card className="flex-1 overflow-hidden">
-                            <div className="text-xl font-semibold text-gray-800">健康提醒</div>
+                        <Card className="flex-1 overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+                            <div className="text-xl font-semibold text-slate-800">健康提醒</div>
                             <div className="mt-4 space-y-3 overflow-auto pr-1">
-                                <div className="rounded-xl border border-gray-100 p-4 text-gray-700">尽量减少熬夜，提升睡眠质量。</div>
-                                <div className="rounded-xl border border-gray-100 p-4 text-gray-700">每周保持 3 次以上适度运动。</div>
-                                <div className="rounded-xl border border-gray-100 p-4 text-gray-700">合理饮食，少油少糖少盐。</div>
+                                <div className="rounded-2xl border border-slate-100 p-4 text-slate-700">尽量减少熬夜，提升睡眠质量。</div>
+                                <div className="rounded-2xl border border-slate-100 p-4 text-slate-700">每周保持 3 次以上适度运动。</div>
+                                <div className="rounded-2xl border border-slate-100 p-4 text-slate-700">合理饮食，少油少糖少盐。</div>
                             </div>
                         </Card>
 

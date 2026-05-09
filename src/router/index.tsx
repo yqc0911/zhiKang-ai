@@ -3,6 +3,11 @@ import Layout from '../pages/Layout'
 import HealthAIPage from '../pages/HealthAIPage'
 import HealthTipsPage from '../pages/HealthTipsPage'
 import SymptomSelfCheckPage from '../pages/SymptomSelfCheckPage'
+import HelpCenterPage from '../pages/HelpCenterPage'
+import PrivacyPolicyPage from '../pages/PrivacyPolicyPage'
+import ContactUsPage from '../pages/ContactUsPage'
+import LoginPage from '../pages/LoginPage'
+import RegisterPage from '../pages/RegisterPage'
 
 const router = createBrowserRouter([
     {
@@ -20,6 +25,26 @@ const router = createBrowserRouter([
     {
         path: '/health-tips',
         element: <HealthTipsPage />,
+    },
+    {
+        path: '/help-center',
+        element: <HelpCenterPage />,
+    },
+    {
+        path: '/privacy-policy',
+        element: <PrivacyPolicyPage />,
+    },
+    {
+        path: '/contact-us',
+        element: <ContactUsPage />,
+    },
+    {
+        path: '/login',
+        element: <LoginPage />,
+    },
+    {
+        path: '/register',
+        element: <RegisterPage />,
     },
 ])
 

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Button, Card, Input, Progress, Tag } from 'antd'
-import { ArrowLeftOutlined, CheckCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import HomePage from '../component/HomePage'
 
 const symptomCategories = [
     '头痛',
@@ -44,28 +45,26 @@ const SymptomSelfCheckPage = () => {
     }
 
     return (
-        <div className="h-screen overflow-hidden bg-gradient-to-b from-blue-50 to-white flex flex-col">
-            <div className="bg-white shadow-sm py-4 px-8 flex items-center flex-none">
-                <button className="mr-4 text-gray-600 hover:text-blue-600" onClick={() => navigate('/')}>
-                    <ArrowLeftOutlined />
-                </button>
-                <h1 className="text-xl font-semibold">症状自查</h1>
+        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
+            <div className="flex-none">
+                <HomePage />
             </div>
 
-            <div className="flex-1 overflow-hidden px-8 py-6">
-                <div className="h-full grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-6">
-                    <Card className="h-full overflow-hidden">
+            <div className="flex-1 overflow-hidden px-4 py-4">
+                <div className="mx-auto grid h-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-[1.35fr_0.85fr]">
+                    <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
                         <div className="h-full flex flex-col gap-5 overflow-hidden">
                             <div>
-                                <div className="text-2xl font-bold text-gray-800">快速症状自查</div>
-                                <div className="text-gray-500 mt-2">搜索或点击症状标签，快速查看自查建议</div>
+                                <div className="text-2xl font-bold text-slate-800">快速症状自查</div>
+                                <div className="text-slate-500 mt-2">搜索或点击症状标签，快速查看自查建议</div>
                             </div>
 
                             <Input
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="搜索症状，例如：头痛、发热、咳嗽"
-                                prefix={<SearchOutlined className="text-gray-400" />}
+                                prefix={<SearchOutlined className="text-slate-400" />}
+                                className="rounded-xl"
                             />
 
                             <div className="flex flex-wrap gap-3 overflow-auto pr-1">
@@ -75,7 +74,7 @@ const SymptomSelfCheckPage = () => {
                                         <Tag
                                             key={symptom}
                                             color={active ? 'blue' : 'default'}
-                                            className="px-3 py-1 cursor-pointer text-base leading-6"
+                                            className="px-3 py-1 cursor-pointer text-base leading-6 rounded-full"
                                             onClick={() => toggleSymptom(symptom)}
                                         >
                                             {symptom}
@@ -84,9 +83,9 @@ const SymptomSelfCheckPage = () => {
                                 })}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                 {suggestions.map((item) => (
-                                    <div key={item} className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-gray-700">
+                                    <div key={item} className="rounded-2xl border border-blue-100 bg-blue-50/80 p-4 text-slate-700 shadow-sm">
                                         {item}
                                     </div>
                                 ))}
@@ -95,29 +94,29 @@ const SymptomSelfCheckPage = () => {
                     </Card>
 
                     <div className="h-full flex flex-col gap-6 overflow-hidden">
-                        <Card className="flex-none">
-                            <div className="text-gray-500 mb-2">当前自查风险</div>
+                        <Card className="flex-none rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+                            <div className="text-slate-500 mb-2">当前自查风险</div>
                             <div className="flex items-end justify-between gap-4">
                                 <div>
                                     <div className="text-4xl font-bold text-blue-600">{riskLabel}</div>
-                                    <div className="text-gray-400 mt-1">已选择 {selected.length} 项症状</div>
+                                    <div className="text-slate-400 mt-1">已选择 {selected.length} 项症状</div>
                                 </div>
                                 <CheckCircleOutlined className="text-4xl text-blue-500" />
                             </div>
                             <Progress percent={riskScore} status={riskScore >= 70 ? 'exception' : 'active'} className="mt-5" />
                         </Card>
 
-                        <Card className="flex-1 overflow-hidden">
-                            <div className="text-lg font-semibold mb-4">已选择的症状</div>
+                        <Card className="flex-1 overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+                            <div className="text-lg font-semibold mb-4 text-slate-800">已选择的症状</div>
                             <div className="flex flex-wrap gap-2 overflow-auto max-h-[220px]">
                                 {selected.length ? (
                                     selected.map((item) => (
-                                        <Tag key={item} color="blue" className="px-3 py-1">
+                                        <Tag key={item} color="blue" className="px-3 py-1 rounded-full">
                                             {item}
                                         </Tag>
                                     ))
                                 ) : (
-                                    <div className="text-gray-400">暂无选择，请在左侧添加症状</div>
+                                    <div className="text-slate-400">暂无选择，请在左侧添加症状</div>
                                 )}
                             </div>
                         </Card>
