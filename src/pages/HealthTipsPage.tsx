@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Button, Card, Input, Tag } from 'antd'
 import { ReadOutlined, SearchOutlined } from '@ant-design/icons'
 import HomePage from '../component/HomePage'
+import { useNavigate } from 'react-router-dom'
 
 type TipCategory = '全部' | '养生' | '疾病预防' | '饮食营养' | '心理健康'
 
@@ -61,6 +62,7 @@ const healthArticles = [
 const HealthTipsPage = () => {
     const [keyword, setKeyword] = useState('')
     const [activeCategory, setActiveCategory] = useState<TipCategory>('全部')
+    const navigate = useNavigate()
 
     const filteredArticles = useMemo(() => {
         return healthArticles.filter((article) => {

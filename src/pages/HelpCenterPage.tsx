@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, Card, Collapse, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import HomePage from '../component/HomePage'
+import { useNavigate } from 'react-router-dom'
 
 const faqData = [
     {
@@ -32,6 +33,7 @@ const HelpCenterPage = () => {
     const filteredFaq = faqData.filter(
         (item) => item.label.includes(keyword.trim()) || item.children.includes(keyword.trim()),
     )
+    const navigate = useNavigate()
 
     return (
         <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
