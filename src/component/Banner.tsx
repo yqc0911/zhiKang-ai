@@ -25,7 +25,7 @@ const slides = [
 
 const Banner = () => {
     return (
-        <div className="page-fade-in mt-6 overflow-hidden rounded-[2rem] border border-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+        <div className="page-fade-in mt-6 overflow-hidden rounded-[2rem] border border-white/70">
             <Carousel autoplay={{ dotDuration: true }} autoplaySpeed={4000} dots className="banner-carousel animate-shimmer-slow">
                 {slides.map((slide) => (
                     <div key={slide.title}>

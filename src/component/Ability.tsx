@@ -62,7 +62,7 @@ const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
                     <Card
                         key={card.key}
                         hoverable
-                        className="group overflow-hidden rounded-3xl border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)]"
+                        className="group overflow-hidden rounded-3xl border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-blue-200 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)]"
                         style={{ animationDelay: `${index * 90}ms` }}
                         cover={
                             <div className="relative h-[180px] overflow-hidden">
