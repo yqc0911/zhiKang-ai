@@ -8,6 +8,7 @@ import PrivacyPolicyPage from '../pages/PrivacyPolicyPage'
 import ContactUsPage from '../pages/ContactUsPage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
+import ProfilePage from '../pages/ProfilePage'
 
 const router = createBrowserRouter([
     {
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
     {
         path: '/register',
         element: <RegisterPage />,
+    },
+    {
+        path: '/profile',
+        element: <ProfilePage />,
     },
 ])
 
