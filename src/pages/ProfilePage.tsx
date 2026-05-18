@@ -1,11 +1,21 @@
-import { useState } from 'react'
-import { Avatar, Button, Card, Form, Input, Modal, Progress, Tag } from 'antd'
+import { useEffect, useState } from 'react'
+import dayjs from 'dayjs'
+import { Avatar, Button, Card, Form, Input, Modal, Progress, Select, Tag } from 'antd'
 import { EditOutlined, HeartOutlined, SettingOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons'
 import HomePage from '../component/HomePage'
 
 const ProfilePage = () => {
     const [editOpen, setEditOpen] = useState(false)
     const [form] = Form.useForm()
+    const [profile, setProfile] = useState({
+        name: '张医生',
+        age: '28',
+        gender: '男',
+        birthday: '1998-05-18',
+        height: '172',
+        weight: '68',
+        device: '手机、手环',
+    })
 
     const stats = [
         { label: '已保存问诊', value: '12 次' },
@@ -19,17 +29,31 @@ const ProfilePage = () => {
         '收藏了 3 篇健康科普文章，持续进行健康管理',
     ]
 
+    useEffect(() => {
+        if (editOpen) {
+            form.setFieldsValue({
+                ...profile,
+                birthday: dayjs(profile.birthday),
+            })
+        }
+    }, [editOpen, form, profile])
+
     const handleOpenEdit = () => {
-        form.setFieldsValue({
-            name: '张医生',
-            age: '28',
-            device: '手机、手环',
-        })
         setEditOpen(true)
     }
 
-    const handleSubmit = () => {
-        form.validateFields().then(() => setEditOpen(false))
+    const handleSubmit = async () => {
+        const values = await form.validateFields()
+        setProfile({
+            name: values.name,
+            age: values.age,
+            gender: values.gender,
+            birthday: values.birthday,
+            height: values.height,
+            weight: values.weight,
+            device: values.device,
+        })
+        setEditOpen(false)
     }
 
     return (
@@ -52,6 +76,12 @@ const ProfilePage = () => {
                                     <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
                                         在这里管理你的基础信息、健康目标和历史记录，让 AI 问诊更懂你。
                                     </p>
+                                    <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
+                                        <Tag className="rounded-full px-3 py-1">性别：{profile.gender}</Tag>
+                                        <Tag className="rounded-full px-3 py-1">生日：{profile.birthday}</Tag>
+                                        <Tag className="rounded-full px-3 py-1">身高：{profile.height}cm</Tag>
+                                        <Tag className="rounded-full px-3 py-1">体重：{profile.weight}kg</Tag>
+                                    </div>
                                 </div>
                             </div>
 
@@ -112,9 +142,9 @@ const ProfilePage = () => {
                         <div className="mt-4 rounded-2xl bg-slate-50 p-4">
                             <div className="text-sm text-slate-500">基础资料</div>
                             <div className="mt-3 space-y-2 text-slate-700">
-                                <div>姓名：张医生</div>
-                                <div>年龄：28 岁</div>
-                                <div>常用设备：手机、手环</div>
+                                <div>姓名：{profile.name}</div>
+                                <div>年龄：{profile.age} 岁</div>
+                                <div>常用设备：{profile.device}</div>
                             </div>
                         </div>
 
@@ -142,13 +172,33 @@ const ProfilePage = () => {
                 cancelText="取消"
                 centered
                 destroyOnHidden
+                width={760}
             >
-                <Form form={form} layout="vertical" className="mt-4">
+                <Form form={form} layout="vertical" className="mt-4 grid gap-4 md:grid-cols-2">
                     <Form.Item label="姓名" name="name" rules={[{ required: true, message: '请输入姓名' }]}>
                         <Input placeholder="请输入姓名" />
                     </Form.Item>
                     <Form.Item label="年龄" name="age" rules={[{ required: true, message: '请输入年龄' }]}>
                         <Input placeholder="请输入年龄" />
+                    </Form.Item>
+                    <Form.Item label="性别" name="gender" rules={[{ required: true, message: '请选择性别' }]}>
+                        <Select
+                            options={[
+                                { value: '男', label: '男' },
+                                { value: '女', label: '女' },
+                                { value: '其他', label: '其他' },
+                            ]}
+                            placeholder="请选择性别"
+                        />
+                    </Form.Item>
+                    <Form.Item label="生日" name="birthday" rules={[{ required: true, message: '请输入生日' }]}>
+                        <Input placeholder="例如：1998-05-18" />
+                    </Form.Item>
+                    <Form.Item label="身高（cm）" name="height" rules={[{ required: true, message: '请输入身高' }]}>
+                        <Input placeholder="例如：172" />
+                    </Form.Item>
+                    <Form.Item label="体重（kg）" name="weight" rules={[{ required: true, message: '请输入体重' }]}>
+                        <Input placeholder="例如：68" />
                     </Form.Item>
                     <Form.Item label="常用设备" name="device" rules={[{ required: true, message: '请输入常用设备' }]}>
                         <Input placeholder="例如：手机、手环" />
