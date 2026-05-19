@@ -1,5 +1,5 @@
 import Ability from '../component/Ability'
-import Banner from '../component/Banner'
+
 import HomePage from '../component/HomePage'
 import Footer from '../component/Footer'
 
@@ -9,7 +9,6 @@ const Layout = () => {
             <HomePage />
             <div className="mx-auto w-5/6 max-w-7xl py-4">
                 <div className="bg-white">
-                    <Banner />
                     <div className="page-fade-in bg-white px-6 py-8 md:px-10">
                         <Ability />
                     </div>

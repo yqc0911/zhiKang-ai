@@ -20,16 +20,16 @@ const HomePage = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
-      <div className="flex min-h-18 w-full items-center justify-between gap-6 px-6 py-2 md:px-8">
+      <div className="flex min-h-18 w-full items-center justify-between gap-6 px-6 py-2 md:px-32">
         <div className="flex items-center gap-10">
           <button
-            className="cursor-pointer text-2xl font-semibold tracking-[0.12em] text-blue-700 transition hover:text-blue-800"
+            className="cursor-pointer text-2xl font-semibold text-[#0d9488] transition hover:text-[#0b8077] "
             onClick={() => navigate('/')}
           >
-            HealthAI
+            ZhiKangAI
           </button>
 
-          <nav aria-label="主导航">
+          <nav aria-label="主导航" className='ml-51'>
             <ul className="flex flex-wrap items-center gap-3 text-sm font-medium">
               {menuItems.map((item) => {
                 const active = activeTab === item.key
