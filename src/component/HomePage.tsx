@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const HomePage = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const [activeAction, setActiveAction] = useState<'login' | 'signup' | null>(null)
 
   const menuItems = [
     { key: 'home', label: '首页', path: '/' },
@@ -18,12 +19,23 @@ const HomePage = () => {
     return current?.key ?? 'home'
   }, [location.pathname])
 
+  const actionButtonClass = (active: boolean, variant: 'login' | 'signup') =>
+    `cursor-pointer rounded-full px-5 py-2.5 font-medium transition-all ${
+      active
+        ? variant === 'login'
+          ? 'border border-blue-600 bg-blue-50 text-blue-600 shadow-sm'
+          : 'bg-blue-700 text-white shadow-lg shadow-blue-200 ring-2 ring-blue-300'
+        : variant === 'login'
+          ? 'border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50'
+          : 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
+    }`
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
       <div className="flex min-h-18 w-full items-center justify-between gap-6 px-6 py-2 md:px-32">
         <div className="flex items-center gap-10">
           <button
-            className="cursor-pointer text-2xl font-semibold text-[#0d9488] transition hover:text-[#0b8077] "
+            className="cursor-pointer text-2xl font-semibold text-[#4A90FF] transition hover:text-[#3478e0] "
             onClick={() => navigate('/')}
           >
             ZhiKangAI
@@ -54,14 +66,20 @@ const HomePage = () => {
 
         <div className="flex items-center gap-3 text-sm font-medium">
           <button
-            className="cursor-pointer rounded-full border border-slate-200 bg-white px-5 py-2.5 text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-            onClick={() => navigate('/login')}
+            className={actionButtonClass(activeAction === 'login', 'login')}
+            onClick={() => {
+              setActiveAction('login')
+              navigate('/login')
+            }}
           >
             Login
           </button>
           <button
-            className="rounded-full bg-blue-600 px-5 py-2.5 text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700"
-            onClick={() => navigate('/register')}
+            className={actionButtonClass(activeAction === 'signup', 'signup')}
+            onClick={() => {
+              setActiveAction('signup')
+              navigate('/register')
+            }}
           >
             Sign up
           </button>

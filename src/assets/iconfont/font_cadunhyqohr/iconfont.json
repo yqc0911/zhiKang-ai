@@ -1,0 +1,16 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "18163955",
+      "name": "大脑,研判,智慧,思考,联想",
+      "font_class": "mind2",
+      "unicode": "e850",
+      "unicode_decimal": 59472
+    }
+  ]
+}

@@ -2,12 +2,15 @@ import Ability from '../component/Ability'
 
 import HomePage from '../component/HomePage'
 import Footer from '../component/Footer'
+import Banner from '../component/Banner'
 
 const Layout = () => {
     return (
         <div className="min-h-screen bg-slate-50">
             <HomePage />
+            <Banner />
             <div className="mx-auto w-5/6 max-w-7xl py-4">
+                
                 <div className="bg-white">
                     <div className="page-fade-in bg-white px-6 py-8 md:px-10">
                         <Ability />

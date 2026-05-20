@@ -1,6 +1,7 @@
 //入口文件
 
 import './App.css'
+import './assets/iconfont/font_cadunhyqohr/iconfont.css'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import router from './router/index'

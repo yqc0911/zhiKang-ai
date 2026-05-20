@@ -8,10 +8,6 @@ const LoginPage = () => {
 
     return (
         <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50 flex flex-col">
-            <div className="flex-none">
-                <HomePage />
-            </div>
-
             <div className="flex-1 overflow-hidden px-4 py-6">
                 <div className="mx-auto grid h-full max-w-6xl grid-cols-1 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur md:grid-cols-[1.05fr_0.95fr]">
                     <div className="hidden bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-400 p-10 text-white md:flex md:flex-col md:justify-between">

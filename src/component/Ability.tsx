@@ -1,6 +1,7 @@
 import { Button, Card, Tag } from 'antd'
-import { ArrowRightOutlined, HeartOutlined, ReadOutlined, RobotOutlined, SearchOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, HeartOutlined, ReadOutlined, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+
 
 interface AbilityProps {
     titleContent?: string
@@ -9,10 +10,10 @@ interface AbilityProps {
 const featureCards = [
     {
         key: 'health-ai',
-        title: 'AI 智能问诊',
+        title: '智能症状分析',
         description: '多轮对话与症状分析，帮助你快速获取初步健康建议。',
         image: 'https://picsum.photos/seed/health-ai/900/600',
-        icon: <RobotOutlined />,
+        icon: <span className="iconfont icon-mind2 text-2xl leading-none" />,
         tags: ['智能对话', '症状分析', '快速响应'],
         path: '/health-ai',
         accent: 'from-blue-600 to-cyan-500',
@@ -53,17 +54,17 @@ const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
     const navigate = useNavigate()
 
     return (
-        <section className="mx-auto mt-10">
+        <section className="mx-auto ">
             <div className="text-center text-2xl font-semibold tracking-[0.28em] text-slate-800">{titleContent}</div>
-            <div className="mt-3 text-center text-sm text-slate-500">围绕问诊、自查、档案和科普，构建完整的健康服务闭环</div>
+            <div className="mt-3 text-center text-sm text-slate-500">集成全球领先AI模型，打造全生命周期健康管理</div>
 
             <div className="abilityBox mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                 {featureCards.map((card, index) => (
                     <Card
                         key={card.key}
                         hoverable
-                        className="group overflow-hidden rounded-3xl border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-blue-200 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)]"
-                        style={{ animationDelay: `${index * 90}ms` }}
+                        className="group card-hover-lift animate-fade-up cursor-default overflow-hidden rounded-3xl border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)]"
+                        style={{ animationDelay: `${index * 150}ms`, animationDuration: '1s' }}
                         cover={
                             <div className="relative h-[180px] overflow-hidden">
                                 <img
