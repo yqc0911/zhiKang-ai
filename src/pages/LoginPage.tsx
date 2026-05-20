@@ -1,7 +1,6 @@
 import { Button, Card, Checkbox, Input } from 'antd'
 import { ArrowLeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import HomePage from '../component/HomePage'
 
 const LoginPage = () => {
     const navigate = useNavigate()

@@ -1,7 +1,6 @@
 import { Button, Card, Input } from 'antd'
 import { ArrowLeftOutlined, LockOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import HomePage from '../component/HomePage'
 
 const RegisterPage = () => {
     const navigate = useNavigate()
