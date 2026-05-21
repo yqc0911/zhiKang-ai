@@ -11,7 +11,7 @@ const featureCards = [
     {
         key: 'health-ai',
         title: '智能症状分析',
-        description: '多轮对话与症状分析，帮助你快速获取初步健康建议。',
+        description: '基于千万级临床案例，AI快速识别潜在风险，为您提供初步分诊建议与健康指导。',
         image: 'https://picsum.photos/seed/health-ai/900/600',
         icon: <span className="iconfont icon-mind2 text-2xl leading-none" />,
         tags: ['智能对话', '症状分析', '快速响应'],
@@ -54,7 +54,7 @@ const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
     const navigate = useNavigate()
 
     return (
-        <section className="mx-auto ">
+        <section className="mx-auto">
             <div className="text-center text-2xl font-semibold tracking-[0.28em] text-slate-800">{titleContent}</div>
             <div className="mt-3 text-center text-sm text-slate-500">集成全球领先AI模型，打造全生命周期健康管理</div>
 
