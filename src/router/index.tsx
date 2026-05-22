@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom'
+import type { ReactElement } from 'react'
 import Layout from '../pages/Layout'
 import HealthAIPage from '../pages/HealthAIPage'
 import HealthTipsPage from '../pages/HealthTipsPage'
@@ -9,47 +10,55 @@ import ContactUsPage from '../pages/ContactUsPage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
 import ProfilePage from '../pages/ProfilePage'
+import NotFoundPage from '../pages/NotFoundPage'
+import RouteGuard from './RouteGuard'
+
+const withGuard = (element: ReactElement) => <RouteGuard>{element}</RouteGuard>
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <Layout />,
+        element: withGuard(<Layout />),
     },
     {
         path: '/health-ai',
-        element: <HealthAIPage />,
+        element: withGuard(<HealthAIPage />),
     },
     {
         path: '/symptom-self-check',
-        element: <SymptomSelfCheckPage />,
+        element: withGuard(<SymptomSelfCheckPage />),
     },
     {
         path: '/health-tips',
-        element: <HealthTipsPage />,
+        element: withGuard(<HealthTipsPage />),
     },
     {
         path: '/help-center',
-        element: <HelpCenterPage />,
+        element: withGuard(<HelpCenterPage />),
     },
     {
         path: '/privacy-policy',
-        element: <PrivacyPolicyPage />,
+        element: withGuard(<PrivacyPolicyPage />),
     },
     {
         path: '/contact-us',
-        element: <ContactUsPage />,
+        element: withGuard(<ContactUsPage />),
     },
     {
         path: '/login',
-        element: <LoginPage />,
+        element: withGuard(<LoginPage />),
     },
     {
         path: '/register',
-        element: <RegisterPage />,
+        element: withGuard(<RegisterPage />),
     },
     {
         path: '/profile',
-        element: <ProfilePage />,
+        element: withGuard(<ProfilePage />),
+    },
+    {
+        path: '*',
+        element: <NotFoundPage />,
     },
 ])
 
