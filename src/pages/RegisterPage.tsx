@@ -1,13 +1,23 @@
-import { Button, Card, Input } from 'antd'
+import { Button, Card, Form, Input } from 'antd'
 import { ArrowLeftOutlined, LockOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+
+interface RegisterFormValues {
+    name: string
+    phone: string
+    password: string
+    confirmPassword: string
+}
 
 const RegisterPage = () => {
     const navigate = useNavigate()
 
+    const handleRegister = (values: RegisterFormValues) => {
+        console.log('register values:', values)
+    }
+
     return (
-        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50 flex flex-col">
-           
+        <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50">
             <div className="flex-1 overflow-hidden px-4 py-6">
                 <div className="mx-auto grid h-full max-w-6xl grid-cols-1 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur md:grid-cols-[0.95fr_1.05fr]">
                     <div className="hidden bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 p-10 text-white md:flex md:flex-col md:justify-between">
@@ -40,21 +50,65 @@ const RegisterPage = () => {
                                 <div className="mt-2 text-slate-500">注册后即可使用 AI 问诊与症状自查</div>
                             </div>
 
-                            <div className="space-y-4">
-                                <Input size="large" placeholder="请输入姓名" prefix={<UserOutlined className="text-slate-400" />} />
-                                <Input size="large" placeholder="请输入手机号" prefix={<PhoneOutlined className="text-slate-400" />} />
-                                <Input.Password size="large" placeholder="请输入密码" prefix={<LockOutlined className="text-slate-400" />} />
-                                <Input.Password size="large" placeholder="确认密码" prefix={<LockOutlined className="text-slate-400" />} />
-                                <Button type="primary" size="large" block className="h-11 rounded-xl">
-                                    注册
-                                </Button>
+                            <Form<RegisterFormValues> layout="vertical" requiredMark={false} onFinish={handleRegister}>
+                                <Form.Item name="name" rules={[{ required: true, message: '请输入姓名' }]}>
+                                    <Input size="large" placeholder="请输入姓名" prefix={<UserOutlined className="text-slate-400" />} />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="phone"
+                                    rules={[
+                                        { required: true, message: '请输入手机号' },
+                                        { pattern: /^\d{11}$/, message: '手机号必须为 11 位数字' },
+                                    ]}
+                                >
+                                    <Input
+                                        size="large"
+                                        maxLength={11}
+                                        inputMode="numeric"
+                                        placeholder="请输入手机号"
+                                        prefix={<PhoneOutlined className="text-slate-400" />}
+                                        onChange={(event) => {
+                                            event.target.value = event.target.value.replace(/\D/g, '').slice(0, 11)
+                                        }}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>
+                                    <Input.Password size="large" placeholder="请输入密码" prefix={<LockOutlined className="text-slate-400" />} />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="confirmPassword"
+                                    dependencies={['password']}
+                                    rules={[
+                                        { required: true, message: '请确认密码' },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                if (!value || getFieldValue('password') === value) {
+                                                    return Promise.resolve()
+                                                }
+                                                return Promise.reject(new Error('两次输入的密码不一致'))
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input.Password size="large" placeholder="确认密码" prefix={<LockOutlined className="text-slate-400" />} />
+                                </Form.Item>
+
+                                <Form.Item className="mb-4">
+                                    <Button type="primary" htmlType="submit" size="large" block className="h-11 rounded-xl">
+                                        注册
+                                    </Button>
+                                </Form.Item>
+
                                 <div className="text-center text-sm text-slate-500">
                                     已有账号？
                                     <button className="ml-1 text-blue-600 hover:text-blue-500" onClick={() => navigate('/login')}>
                                         去登录
                                     </button>
                                 </div>
-                            </div>
+                            </Form>
                         </Card>
                     </div>
                 </div>
