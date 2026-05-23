@@ -1,19 +1,31 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
 import type { ReactElement } from 'react'
-import Layout from '../pages/Layout'
-import HealthAIPage from '../pages/HealthAIPage'
-import HealthTipsPage from '../pages/HealthTipsPage'
-import SymptomSelfCheckPage from '../pages/SymptomSelfCheckPage'
-import HelpCenterPage from '../pages/HelpCenterPage'
-import PrivacyPolicyPage from '../pages/PrivacyPolicyPage'
-import ContactUsPage from '../pages/ContactUsPage'
-import LoginPage from '../pages/LoginPage'
-import RegisterPage from '../pages/RegisterPage'
-import ProfilePage from '../pages/ProfilePage'
-import NotFoundPage from '../pages/NotFoundPage'
+import { createBrowserRouter } from 'react-router-dom'
 import RouteGuard from './RouteGuard'
 
-const withGuard = (element: ReactElement) => <RouteGuard>{element}</RouteGuard>
+const Layout = lazy(() => import('../pages/Layout'))
+const HealthAIPage = lazy(() => import('../pages/HealthAIPage'))
+const HealthTipsPage = lazy(() => import('../pages/HealthTipsPage'))
+const SymptomSelfCheckPage = lazy(() => import('../pages/SymptomSelfCheckPage'))
+const HelpCenterPage = lazy(() => import('../pages/HelpCenterPage'))
+const PrivacyPolicyPage = lazy(() => import('../pages/PrivacyPolicyPage'))
+const ContactUsPage = lazy(() => import('../pages/ContactUsPage'))
+const LoginPage = lazy(() => import('../pages/LoginPage'))
+const RegisterPage = lazy(() => import('../pages/RegisterPage'))
+const ProfilePage = lazy(() => import('../pages/ProfilePage'))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+
+const PageLoading = () => (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
+        页面加载中...
+    </div>
+)
+
+const withSuspense = (element: ReactElement) => (
+    <Suspense fallback={<PageLoading />}>{element}</Suspense>
+)
+
+const withGuard = (element: ReactElement) => withSuspense(<RouteGuard>{element}</RouteGuard>)
 
 const router = createBrowserRouter([
     {
@@ -58,7 +70,7 @@ const router = createBrowserRouter([
     },
     {
         path: '*',
-        element: <NotFoundPage />,
+        element: withGuard(<NotFoundPage />),
     },
 ])
 
