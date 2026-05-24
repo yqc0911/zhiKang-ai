@@ -13,6 +13,8 @@ const ContactUsPage = lazy(() => import('../pages/ContactUsPage'))
 const LoginPage = lazy(() => import('../pages/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/RegisterPage'))
 const ProfilePage = lazy(() => import('../pages/ProfilePage'))
+const Shop = lazy(() => import('../pages/Shop'))
+const ProductDetails = lazy(() => import('../pages/ProductDetails'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
 const PageLoading = () => (
@@ -67,6 +69,14 @@ const router = createBrowserRouter([
     {
         path: '/profile',
         element: withGuard(<ProfilePage />),
+    },
+    {
+        path: '/shop',
+        element: withGuard(<Shop />),
+    },
+    {
+        path: '/shop/product/:id',
+        element: withGuard(<ProductDetails />),
     },
     {
         path: '*',

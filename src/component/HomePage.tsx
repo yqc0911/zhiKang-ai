@@ -12,6 +12,7 @@ const HomePage = () => {
     { key: 'symptoms', label: '症状自查', path: '/symptom-self-check' },
     { key: 'health', label: '健康科普', path: '/health-tips' },
     { key: 'profile', label: '个人档案', path: '/profile' },
+    { key: 'shop', label: '在线商城', path: '/shop' },
   ]
 
   const activeTab = useMemo(() => {
@@ -20,7 +21,7 @@ const HomePage = () => {
   }, [location.pathname])
 
   const actionButtonClass = (active: boolean, variant: 'login' | 'signup') =>
-    `cursor-pointer rounded-full px-5 py-2.5 font-medium transition-all ${
+    `cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all sm:px-5 sm:py-2.5 ${
       active
         ? variant === 'login'
           ? 'border border-blue-600 bg-blue-50 text-blue-600 shadow-sm'
@@ -32,23 +33,23 @@ const HomePage = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
-      <div className="flex min-h-18 w-full items-center justify-between gap-6 px-6 py-2 md:px-32">
-        <div className="flex items-center gap-10">
+      <div className="flex w-full flex-col gap-3 px-4 py-3 lg:min-h-18 lg:flex-row lg:items-center lg:justify-between lg:px-12 xl:px-32">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-8">
           <button
-            className="cursor-pointer text-2xl font-semibold text-[#4A90FF] transition hover:text-[#3478e0] "
+            className="cursor-pointer self-start text-2xl font-semibold text-[#4A90FF] transition hover:text-[#3478e0]"
             onClick={() => navigate('/')}
           >
             ZhiKangAI
           </button>
 
-          <nav aria-label="主导航" className='ml-51'>
-            <ul className="flex flex-wrap items-center gap-3 text-sm font-medium">
+          <nav aria-label="主导航" className="w-full overflow-x-auto lg:w-auto lg:overflow-visible">
+            <ul className="flex min-w-max items-center gap-2 text-sm font-medium lg:flex-wrap lg:gap-3">
               {menuItems.map((item) => {
                 const active = activeTab === item.key
                 return (
                   <li key={item.key}>
                     <button
-                      className={`cursor-pointer rounded-full px-4 py-2 transition-all ${
+                      className={`cursor-pointer whitespace-nowrap rounded-full px-3 py-2 transition-all sm:px-4 ${
                         active
                           ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
                           : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
@@ -64,7 +65,7 @@ const HomePage = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 text-sm font-medium">
+        <div className="flex items-center gap-2 self-start text-sm font-medium lg:self-auto">
           <button
             className={actionButtonClass(activeAction === 'login', 'login')}
             onClick={() => {

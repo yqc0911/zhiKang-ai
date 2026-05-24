@@ -7,6 +7,7 @@ export const routeWhiteList = [
   '/contact-us',
   '/login',
   '/register',
+  '/shop',
 ]
 
 interface BeforeEachOptions {
@@ -23,7 +24,7 @@ export const isLoggedIn = () => {
 }
 
 export const beforeEach = ({ pathname }: BeforeEachOptions): BeforeEachResult => {
-  const inWhiteList = routeWhiteList.includes(pathname)
+  const inWhiteList = routeWhiteList.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
   if (inWhiteList) {
     return { allow: true }
