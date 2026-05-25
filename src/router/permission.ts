@@ -8,6 +8,8 @@ export const routeWhiteList = [
   '/login',
   '/register',
   '/shop',
+  '/cart',
+  '/pay',
 ]
 
 interface BeforeEachOptions {

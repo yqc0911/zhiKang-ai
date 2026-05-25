@@ -14,6 +14,8 @@ const LoginPage = lazy(() => import('../pages/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/RegisterPage'))
 const ProfilePage = lazy(() => import('../pages/ProfilePage'))
 const Shop = lazy(() => import('../pages/Shop'))
+const Cart = lazy(() => import('../pages/Cart'))
+const Pay = lazy(() => import('../pages/Pay'))
 const ProductDetails = lazy(() => import('../pages/ProductDetails'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
     {
         path: '/shop',
         element: withGuard(<Shop />),
+    },
+    {
+        path: '/cart',
+        element: withGuard(<Cart />),
+    },
+    {
+        path: '/pay',
+        element: withGuard(<Pay />),
     },
     {
         path: '/shop/product/:id',

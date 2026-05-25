@@ -22,7 +22,7 @@ const Layout = () => {
 
 
             {/* 黑色条块区域 */}
-            <div className='w-full h-90 bg-[#213145]'>
+            <div className='w-full h-90 bg-[#213145] my-12'>
                 <div className='outerDiv h-full flex gap-64 items-center content-center'>
                     <div className='w-96 h-36'>
                         <p className='text-center text-4xl text-[#89F5E7]'>1M+</p>
@@ -46,28 +46,24 @@ const Layout = () => {
             </div>
 
             {/* 健康洞察与资讯 */}
-            <div className='container h-[41.25rem] w-full bg-white mx-auto'>
-            <div className="outDIv w-9/10 h-full">
-                    <div className="title pt-16">
-                        <p className='mb-5 mx-8 text-5xl text-[#00685F]'>健康洞察与资讯</p>
-                        <div className="inner flex justify-between w-[1200px] ml-8">
+            <div className='mx-auto w-full bg-white'>
+                <div className="outDIv mx-auto w-full max-w-7xl px-8 pb-10 pt-16">
+                    <div className="title">
+                        <p className='mb-5 text-5xl text-[#00685F]'>健康洞察与资讯</p>
+                        <div className="inner flex w-full items-center justify-between">
                             <p>为您挑选最前沿的医疗科技与健康管理建议</p>
                             <button className='cursor-pointer text-[#00685F]'>查看全部 <ExportOutlined /> </button>
                         </div>
                     </div>
+
+                    {/* 图片区域 */}
+                    <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        <div className='h-[19.25rem] rounded-3xl bg-[url()] bg-cover bg-center'></div>
+                        <div></div>
+                        <div></div>
+                    </div>
                 </div>
-
-                {/* 图片区域 */}
-
-                <div className="container">
-                    <div className='w-[34.25rem] h-[19.25rem] bg-[url()]'></div>
-                    <div></div>
-                    <div></div>
-                </div>
-
             </div>
-
-
 
             <Footer />
         </div>

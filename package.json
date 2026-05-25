@@ -14,6 +14,7 @@
     "@tailwindcss/vite": "^4.2.4",
     "ai": "^6.0.185",
     "antd": "^6.3.7",
+    "axios": "^1.16.1",
     "class-variance-authority": "^0.7.1",
     "echarts": "^6.0.0",
     "express": "^5.2.1",

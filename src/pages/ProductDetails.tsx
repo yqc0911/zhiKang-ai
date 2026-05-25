@@ -100,11 +100,8 @@ const ProductDetails = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button size="large" className="h-12 flex-1 rounded-2xl" onClick={() => navigate('/shop')}>
-                    继续浏览
-                  </Button>
-                  <Button size="large" type="primary" icon={<ShoppingCartOutlined />} className="h-12 flex-1 rounded-2xl bg-slate-900 hover:bg-blue-700">
-                    加入健康清单
+                  <Button size="large" type="primary" icon={<ShoppingCartOutlined />} className="h-12 flex-1 rounded-2xl bg-slate-900 hover:bg-blue-700" onClick={() => navigate('/cart')}>
+                    加入购物车
                   </Button>
                 </div>
               </div>

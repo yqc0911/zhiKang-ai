@@ -1,12 +1,27 @@
-import { Button, Card, Checkbox, Input } from 'antd'
+import { Button, Card, Checkbox, Input, message } from 'antd'
 import { ArrowLeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { login } from '../utils/request'
 
 const LoginPage = () => {
     const navigate = useNavigate()
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+
+    const handleLogin = async () => {
+        try {
+            const res = await login({ username, password })
+            message.success('登录请求已发送')
+            console.log('login success:', res)
+        } catch (error) {
+            message.error('登录失败，请稍后重试')
+            console.error('login error:', error)
+        }
+    }
 
     return (
-        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50 flex flex-col">
+        <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50">
             <div className="flex-1 overflow-hidden px-4 py-6">
                 <div className="mx-auto grid h-full max-w-6xl grid-cols-1 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur md:grid-cols-[1.05fr_0.95fr]">
                     <div className="hidden bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-400 p-10 text-white md:flex md:flex-col md:justify-between">
@@ -42,11 +57,15 @@ const LoginPage = () => {
                             <div className="space-y-4">
                                 <Input
                                     size="large"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     placeholder="请输入手机号或用户名"
                                     prefix={<UserOutlined className="text-slate-400" />}
                                 />
                                 <Input.Password
                                     size="large"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     placeholder="请输入密码"
                                     prefix={<LockOutlined className="text-slate-400" />}
                                 />
@@ -56,7 +75,7 @@ const LoginPage = () => {
                                     <button className="text-blue-600 hover:text-blue-500">忘记密码？</button>
                                 </div>
 
-                                <Button type="primary" size="large" block className="h-11 rounded-xl">
+                                <Button type="primary" size="large" block className="h-11 rounded-xl" onClick={handleLogin}>
                                     登录
                                 </Button>
 
