@@ -21,8 +21,19 @@ interface BeforeEachResult {
   redirect?: string
 }
 
+import { clearToken, getToken, isTokenExpired } from '../utils/request'
+
 export const isLoggedIn = () => {
-  return Boolean(localStorage.getItem('token') || localStorage.getItem('userInfo'))
+  const token = getToken()
+
+  if (!token) return false
+
+  if (isTokenExpired(token)) {
+    clearToken()
+    return false
+  }
+
+  return Boolean(token || localStorage.getItem('userInfo'))
 }
 
 export const beforeEach = ({ pathname }: BeforeEachOptions): BeforeEachResult => {

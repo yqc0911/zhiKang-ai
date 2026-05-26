@@ -2,7 +2,7 @@ import { Button, Card, Checkbox, Input, message } from 'antd'
 import { ArrowLeftOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { login } from '../utils/request'
+import { login, setToken } from '../utils/request'
 
 const LoginPage = () => {
     const navigate = useNavigate()
@@ -12,13 +12,24 @@ const LoginPage = () => {
     const handleLogin = async () => {
         try {
             const res = await login({ username, password })
-            message.success('登录请求已发送')
-            console.log('login success:', res)
+            const token = res?.data?.token || res?.data?.data?.token
+
+            if (token) {
+                setToken(token)
+                message.success('登录成功')
+                navigate('/')
+                return
+            }
+
+            message.error('用户名或密码错误')
         } catch (error) {
-            message.error('登录失败，请稍后重试')
+            message.error('用户名或密码错误')
             console.error('login error:', error)
         }
     }
+
+    
+    
 
     return (
         <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50">

@@ -1,3 +1,5 @@
+import { Avatar } from 'antd'
+import { LogoutOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons'
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -5,6 +7,7 @@ const HomePage = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [activeAction, setActiveAction] = useState<'login' | 'signup' | null>(null)
+  const isLoggedIn = Boolean(localStorage.getItem('token'))
 
   const menuItems = [
     { key: 'home', label: '首页', path: '/' },
@@ -65,25 +68,58 @@ const HomePage = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2 self-start text-sm font-medium lg:self-auto">
-          <button
-            className={actionButtonClass(activeAction === 'login', 'login')}
-            onClick={() => {
-              setActiveAction('login')
-              navigate('/login')
-            }}
-          >
-            Login
-          </button>
-          <button
-            className={actionButtonClass(activeAction === 'signup', 'signup')}
-            onClick={() => {
-              setActiveAction('signup')
-              navigate('/register')
-            }}
-          >
-            Sign up
-          </button>
+        <div className="flex items-center gap-4 self-start text-sm font-medium lg:self-auto">
+          {isLoggedIn ? (
+            <>
+              <button
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
+                onClick={() => navigate('/cart')}
+                aria-label="购物车"
+              >
+                <ShoppingCartOutlined className="text-lg" />
+              </button>
+              <button
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
+                onClick={() => navigate('/profile')}
+                aria-label="个人中心"
+              >
+                <Avatar size={30} icon={<UserOutlined />} />
+              </button>
+              <button
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
+                onClick={() => {
+                  localStorage.removeItem('token')
+                  localStorage.removeItem('userInfo')
+                  window.history.replaceState(null, '', '/login')
+                  window.location.replace('/login')
+                }}
+                aria-label="退出登录"
+              >
+                <LogoutOutlined />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className={actionButtonClass(activeAction === 'login', 'login')}
+                onClick={() => {
+                  setActiveAction('login')
+                  navigate('/login')
+                }}
+              >
+                Login
+              </button>
+              <button
+                className={actionButtonClass(activeAction === 'signup', 'signup')}
+                onClick={() => {
+                  setActiveAction('signup')
+                  navigate('/register')
+                }}
+              >
+                Sign up
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>
