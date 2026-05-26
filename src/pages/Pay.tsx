@@ -5,12 +5,14 @@ import { useNavigate } from 'react-router-dom'
 import HomePage from '../component/HomePage'
 import Footer from '../component/Footer'
 
+// 收货地址类型定义
 interface AddressItem {
   id: string
   label: string
   detail: string
 }
 
+// 初始地址数据
 const initialAddresses: AddressItem[] = [
   { id: 'addr-1', label: '默认地址', detail: '上海市浦东新区张江高科技园区 88 号 10 幢 502 室' },
   { id: 'addr-2', label: '家用地址', detail: '北京市朝阳区望京街道望京 SOHO T3 1208 室' },
@@ -19,9 +21,14 @@ const initialAddresses: AddressItem[] = [
 
 const Pay = () => {
   const navigate = useNavigate()
+
+  // 支付方式
   const [paymentMethod, setPaymentMethod] = useState<'alipay' | 'wechat' | 'card'>('alipay')
+  // 付款人信息
   const [payerName, setPayerName] = useState('')
   const [phone, setPhone] = useState('')
+
+  // 地址管理状态
   const [selectedAddressId, setSelectedAddressId] = useState(initialAddresses[0].id)
   const [addresses, setAddresses] = useState<AddressItem[]>(initialAddresses)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
@@ -29,8 +36,10 @@ const Pay = () => {
   const [addressLabel, setAddressLabel] = useState('')
   const [addressDetail, setAddressDetail] = useState('')
 
+  // 当前选中的收货地址
   const selectedAddress = addresses.find((address) => address.id === selectedAddressId) ?? addresses[0]
 
+  // 订单明细
   const orderSummary = useMemo(
     () => [
       { name: '成人复合维生素营养片', count: 1, price: 76 },
@@ -39,8 +48,10 @@ const Pay = () => {
     [],
   )
 
+  // 总金额
   const total = useMemo(() => orderSummary.reduce((sum, item) => sum + item.price * item.count, 0), [orderSummary])
 
+  // 打开新增地址弹窗
   const openAddAddress = () => {
     setEditingAddressId(null)
     setAddressLabel('')
@@ -48,6 +59,7 @@ const Pay = () => {
     setAddressModalOpen(true)
   }
 
+  // 打开编辑地址弹窗
   const openEditAddress = (address: AddressItem) => {
     setEditingAddressId(address.id)
     setAddressLabel(address.label)
@@ -55,6 +67,7 @@ const Pay = () => {
     setAddressModalOpen(true)
   }
 
+  // 关闭地址弹窗并清空编辑状态
   const closeAddressModal = () => {
     setAddressModalOpen(false)
     setEditingAddressId(null)
@@ -62,6 +75,7 @@ const Pay = () => {
     setAddressDetail('')
   }
 
+  // 保存地址信息
   const saveAddress = () => {
     const nextLabel = addressLabel.trim()
     const nextDetail = addressDetail.trim()
@@ -85,6 +99,7 @@ const Pay = () => {
     closeAddressModal()
   }
 
+  // 删除地址
   const removeAddress = (id: string) => {
     const target = addresses.find((item) => item.id === id)
     if (!target) return
@@ -108,6 +123,7 @@ const Pay = () => {
     })
   }
 
+  // 提交支付
   const handlePay = () => {
     if (!payerName || !phone || !selectedAddress) {
       message.warning('请先完善付款人信息和收货地址')
