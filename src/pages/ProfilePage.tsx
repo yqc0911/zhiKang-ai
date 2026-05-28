@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
-import { Avatar, Button, Card, Form, Input, Modal, Progress, Select, Tag } from 'antd'
-import { EditOutlined, HeartOutlined, SettingOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Button, Card, DatePicker, Form, Input, Modal, Progress, Select, Tag, Upload, message } from 'antd'
+import { EditOutlined, HeartOutlined, PlusOutlined, SettingOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons'
 import HomePage from '../component/HomePage'
 
 const ProfilePage = () => {
     const [editOpen, setEditOpen] = useState(false)
+    const [avatarOpen, setAvatarOpen] = useState(false)
+    const [avatarUrl, setAvatarUrl] = useState<string>('')
     const [form] = Form.useForm()
     const [profile, setProfile] = useState({
         name: '张医生',
-        age: '28',
         gender: '男',
         birthday: '1998-05-18',
         height: '172',
         weight: '68',
-        device: '手机、手环',
     })
 
     const stats = [
@@ -36,39 +36,53 @@ const ProfilePage = () => {
                 birthday: dayjs(profile.birthday),
             })
         }
-    }, [editOpen, form, profile])
+    }, [editOpen])
 
     const handleOpenEdit = () => {
         setEditOpen(true)
     }
 
     const handleSubmit = async () => {
-        const values = await form.validateFields()
-        setProfile({
-            name: values.name,
-            age: values.age,
-            gender: values.gender,
-            birthday: values.birthday,
-            height: values.height,
-            weight: values.weight,
-            device: values.device,
-        })
-        setEditOpen(false)
+        try {
+            const values = await form.validateFields()
+            const birthdayValue = values.birthday
+            const formattedBirthday = birthdayValue && typeof birthdayValue.format === 'function'
+                ? birthdayValue.format('YYYY-MM-DD')
+                : birthdayValue
+
+            setProfile({
+                name: values.name,
+                gender: values.gender,
+                birthday: formattedBirthday,
+                height: values.height,
+                weight: values.weight,
+            })
+            setEditOpen(false)
+        } catch (error) {
+            console.error('表单验证失败:', error)
+        }
     }
 
     return (
-        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50">
-            <HomePage />
+        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
+            <div className="flex-none">
+                <HomePage />
+            </div>
 
-            <main className="mx-auto flex h-[calc(100vh-72px)] w-full max-w-7xl items-center px-4 py-4 md:px-8 md:py-6">
-                <div className="grid w-full gap-4 overflow-hidden lg:grid-cols-[1.05fr_0.95fr]">
-                    <Card className="overflow-hidden rounded-[2rem] border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+            <div className="flex-1 overflow-hidden px-4 py-4">
+                <div className="mx-auto  h-full max-w-[80vw]  lg:grid-cols-[1.05fr_0.95fr]">
+                    <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div className="flex items-center gap-4">
-                                <Avatar size={80} className="bg-blue-600 text-3xl" icon={<UserOutlined />} />
+                                <div className="relative cursor-pointer group" onClick={() => setAvatarOpen(true)}>
+                                    <Avatar size={80} src={avatarUrl} className="bg-blue-600 text-3xl" icon={<UserOutlined />} />
+                                    <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <EditOutlined className="text-white text-xl" />
+                                    </div>
+                                </div>
                                 <div>
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <h1 className="text-2xl font-bold text-slate-800">个人档案</h1>
+                                        <h1 className="text-2xl font-bold text-slate-800">{profile.name} 的个人档案</h1>
                                         <Tag color="blue" className="rounded-full px-3 py-1 text-sm">
                                             健康档案已开启
                                         </Tag>
@@ -92,7 +106,7 @@ const ProfilePage = () => {
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-3">
                             {stats.map((item) => (
-                                <div key={item.label} className="rounded-2xl bg-slate-50 p-4">
+                                <div key={item.label} className="rounded-xl bg-slate-50 p-4">
                                     <div className="text-sm text-slate-500">{item.label}</div>
                                     <div className="mt-2 text-xl font-semibold text-slate-800">{item.value}</div>
                                 </div>
@@ -100,7 +114,7 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="mt-5 grid gap-4 md:grid-cols-[1fr_0.9fr]">
-                            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <div className="rounded-xl border border-slate-200 bg-white p-4">
                                 <div className="flex items-center gap-2 text-base font-semibold text-slate-800">
                                     <HeartOutlined className="text-pink-500" />
                                     健康概况
@@ -113,58 +127,30 @@ const ProfilePage = () => {
                                         </div>
                                         <Progress percent={86} strokeColor="#2563eb" showInfo={false} />
                                     </div>
-                                    <div className="rounded-2xl bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                                    <div className="rounded-xl bg-slate-50 p-3 text-sm leading-6 text-slate-600">
                                         建议保持规律作息与适度运动，并持续记录近期症状变化，以便获得更准确的个性化建议。
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <div className="rounded-xl border border-slate-200 bg-white p-4">
                                 <div className="flex items-center gap-2 text-base font-semibold text-slate-800">
                                     <TrophyOutlined className="text-amber-500" />
                                     健康目标
                                 </div>
                                 <div className="mt-4 space-y-3 text-slate-600">
-                                    <div className="rounded-2xl bg-amber-50 p-3">本周完成 5 次步行锻炼</div>
-                                    <div className="rounded-2xl bg-emerald-50 p-3">每日饮水量达到 1500ml</div>
-                                    <div className="rounded-2xl bg-blue-50 p-3">每周记录一次健康指标</div>
+                                    <div className="rounded-xl bg-amber-50 p-3">本周完成 5 次步行锻炼</div>
+                                    <div className="rounded-xl bg-emerald-50 p-3">每日饮水量达到 1500ml</div>
+                                    <div className="rounded-xl bg-blue-50 p-3">每周记录一次健康指标</div>
                                 </div>
                             </div>
                         </div>
                     </Card>
-
-                    <Card className="rounded-[2rem] border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-                        <div className="flex items-center gap-2 text-base font-semibold text-slate-800">
-                            <SettingOutlined className="text-blue-600" />
-                            个人设置与动态
-                        </div>
-
-                        <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                            <div className="text-sm text-slate-500">基础资料</div>
-                            <div className="mt-3 space-y-2 text-slate-700">
-                                <div>姓名：{profile.name}</div>
-                                <div>年龄：{profile.age} 岁</div>
-                                <div>常用设备：{profile.device}</div>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 rounded-2xl border border-slate-200 p-4">
-                            <div className="text-sm font-medium text-slate-800">最近动态</div>
-                            <div className="mt-3 space-y-3">
-                                {timeline.map((item) => (
-                                    <div key={item} className="flex gap-3 text-sm leading-6 text-slate-600">
-                                        <span className="mt-2 h-2 w-2 flex-none rounded-full bg-blue-500" />
-                                        <span>{item}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </Card>
                 </div>
-            </main>
+            </div>
 
             <Modal
-                title="编辑资料"
+                title={<span className="text-lg font-semibold text-slate-800">编辑资料</span>}
                 open={editOpen}
                 onCancel={() => setEditOpen(false)}
                 onOk={handleSubmit}
@@ -173,15 +159,13 @@ const ProfilePage = () => {
                 centered
                 destroyOnHidden
                 width={760}
+                className="profile-edit-modal"
             >
                 <Form form={form} layout="vertical" className="mt-4 grid gap-4 md:grid-cols-2">
-                    <Form.Item label="姓名" name="name" rules={[{ required: true, message: '请输入姓名' }]}>
-                        <Input placeholder="请输入姓名" />
+                    <Form.Item label={<span className="text-slate-600">姓名</span>} name="name" rules={[{ required: true, message: '请输入姓名' }]}>
+                        <Input placeholder="请输入姓名" className="rounded-lg" />
                     </Form.Item>
-                    <Form.Item label="年龄" name="age" rules={[{ required: true, message: '请输入年龄' }]}>
-                        <Input placeholder="请输入年龄" />
-                    </Form.Item>
-                    <Form.Item label="性别" name="gender" rules={[{ required: true, message: '请选择性别' }]}>
+                    <Form.Item label={<span className="text-slate-600">性别</span>} name="gender" rules={[{ required: true, message: '请选择性别' }]}>
                         <Select
                             options={[
                                 { value: '男', label: '男' },
@@ -189,21 +173,55 @@ const ProfilePage = () => {
                                 { value: '其他', label: '其他' },
                             ]}
                             placeholder="请选择性别"
+                            className="rounded-lg"
                         />
                     </Form.Item>
-                    <Form.Item label="生日" name="birthday" rules={[{ required: true, message: '请输入生日' }]}>
-                        <Input placeholder="例如：1998-05-18" />
+                    <Form.Item label={<span className="text-slate-600">出生日期</span>} name="birthday" rules={[{ required: true, message: '请选择出生日期' }]}>
+                        <DatePicker className="w-full rounded-lg" placeholder="请选择日期" format="YYYY-MM-DD" />
                     </Form.Item>
-                    <Form.Item label="身高（cm）" name="height" rules={[{ required: true, message: '请输入身高' }]}>
-                        <Input placeholder="例如：172" />
+                    <Form.Item label={<span className="text-slate-600">身高（cm）</span>} name="height" rules={[{ required: true, message: '请输入身高' }]}>
+                        <Input placeholder="例如：172" className="rounded-lg" />
                     </Form.Item>
-                    <Form.Item label="体重（kg）" name="weight" rules={[{ required: true, message: '请输入体重' }]}>
-                        <Input placeholder="例如：68" />
-                    </Form.Item>
-                    <Form.Item label="常用设备" name="device" rules={[{ required: true, message: '请输入常用设备' }]}>
-                        <Input placeholder="例如：手机、手环" />
+                    <Form.Item label={<span className="text-slate-600">体重（kg）</span>} name="weight" rules={[{ required: true, message: '请输入体重' }]}>
+                        <Input placeholder="例如：68" className="rounded-lg" />
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            <Modal
+                title={<span className="text-lg font-semibold text-slate-800">修改头像</span>}
+                open={avatarOpen}
+                onCancel={() => setAvatarOpen(false)}
+                footer={null}
+                centered
+                width={400}
+            >
+                <div className="flex flex-col items-center gap-6 py-4">
+                    <Avatar size={120} src={avatarUrl} className="bg-blue-600 text-4xl" icon={<UserOutlined />} />
+                    <Upload
+                        showUploadList={false}
+                        beforeUpload={(file) => {
+                            const reader = new FileReader()
+                            reader.onload = function(e) {
+                                const result = e.target?.result
+                                if (result && typeof result === 'string') {
+                                    setAvatarUrl(result)
+                                    message.success('头像上传成功')
+                                }
+                            }
+                            reader.readAsDataURL(file)
+                            return false
+                        }}
+                    >
+                        <Button icon={<PlusOutlined />}>选择图片</Button>
+                    </Upload>
+                    {avatarUrl && (
+                        <Button type="primary" onClick={() => setAvatarOpen(false)}>
+                            完成
+                        </Button>
+                    )}
+                    <div className="text-sm text-slate-500">支持 JPG、PNG 格式，建议尺寸 200x200</div>
+                </div>
             </Modal>
         </div>
     )

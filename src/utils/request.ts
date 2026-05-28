@@ -29,4 +29,31 @@ export const isTokenExpired = (token: string) => {
   }
 }
 
+export interface HealthReminder {
+  content: string
+  icon: string
+}
+
+export interface WeatherInfo {
+  temp: string
+  text: string
+  humidity: string
+  windDir: string
+  windSpeed: string
+  precip: string
+}
+
+export interface HealthRemindersResponse {
+  code: number
+  message: string
+  data: {
+    weather: WeatherInfo
+    reminders: HealthReminder[]
+  }
+}
+
+export const getHealthReminders = (location?: string) => {
+  return request.get<HealthRemindersResponse>('/api/health-reminders', { params: { location } })
+}
+
 export default request

@@ -1,10 +1,24 @@
-import { useMemo, useState } from 'react'
-import { Button, Card, Input, Tag } from 'antd'
+import { useMemo, useState, useEffect } from 'react'
+import { Button, Card, Input, Tag, Table } from 'antd'
 import { ReadOutlined, SearchOutlined } from '@ant-design/icons'
 import HomePage from '../component/HomePage'
 import { useNavigate } from 'react-router-dom'
+import { getHealthReminders, type HealthReminder } from '../utils/request'
 
 type TipCategory = '全部' | '养生' | '疾病预防' | '饮食营养' | '心理健康'
+
+const iconMap: Record<string, string> = {
+  hot: '🔥',
+  cold: '❄️',
+  rain: '🌧️',
+  fog: '🌫️',
+  sunny: '☀️',
+  humid: '💧',
+  windy: '💨',
+  sleep: '🌙',
+  exercise: '🏃',
+  diet: '🥗',
+}
 
 const categories: TipCategory[] = ['全部', '养生', '疾病预防', '饮食营养', '心理健康']
 
@@ -62,7 +76,22 @@ const healthArticles = [
 const HealthTipsPage = () => {
     const [keyword, setKeyword] = useState('')
     const [activeCategory, setActiveCategory] = useState<TipCategory>('全部')
+    const [healthReminders, setHealthReminders] = useState<HealthReminder[]>([])
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchHealthReminders = async () => {
+            try {
+                const res = await getHealthReminders()
+                if (res.data.code === 200 && res.data.data) {
+                    setHealthReminders(res.data.data.reminders)
+                }
+            } catch (error) {
+                console.error('Failed to fetch health reminders:', error)
+            }
+        }
+        fetchHealthReminders()
+    }, [])
 
     const filteredArticles = useMemo(() => {
         return healthArticles.filter((article) => {
@@ -79,7 +108,7 @@ const HealthTipsPage = () => {
             </div>
 
             <div className="flex-1 overflow-hidden px-4 py-4">
-                <div className="mx-auto grid h-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="mx-auto grid h-full max-w-6xl grid-cols-1 gap-4 lg:grid-cols-[1.4fr_0.6fr]">
                     <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
                         <div className="h-full flex flex-col gap-5 overflow-hidden">
                             <div>
@@ -108,51 +137,85 @@ const HealthTipsPage = () => {
                                 ))}
                             </div>
 
-                            <div className="flex-1 overflow-auto pr-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {filteredArticles.map((article) => (
-                                    <Card key={article.id} hoverable className="h-full rounded-2xl border-slate-200/80 shadow-sm">
-                                        <div className="flex items-start gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-none">
-                                                <ReadOutlined />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <div className="text-lg font-semibold text-slate-800">{article.title}</div>
-                                                <div className="text-sm text-slate-500 mt-1">{article.time}</div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4 text-slate-600 leading-7">{article.summary}</div>
-
-                                        <div className="mt-4 flex flex-wrap gap-2">
-                                            {article.tags.map((tag) => (
-                                                <Tag key={tag}>{tag}</Tag>
-                                            ))}
-                                        </div>
-                                    </Card>
-                                ))}
+                            <div className="flex-1 overflow-hidden">
+                                <Table
+                                    dataSource={filteredArticles}
+                                    rowKey="id"
+                                    pagination={{ pageSize: 4 }}
+                                    scroll={{ y: 'calc(100vh - 460px)' }}
+                                    columns={[
+                                        {
+                                            title: '标题',
+                                            dataIndex: 'title',
+                                            key: 'title',
+                                            className: 'font-semibold text-slate-800',
+                                        },
+                                        {
+                                            title: '分类',
+                                            dataIndex: 'category',
+                                            key: 'category',
+                                            render: (category: string) => (
+                                                <Tag color="blue">{category}</Tag>
+                                            ),
+                                        },
+                                        {
+                                            title: '简介',
+                                            dataIndex: 'summary',
+                                            key: 'summary',
+                                            className: 'text-slate-600',
+                                            ellipsis: true,
+                                        },
+                                        {
+                                            title: '标签',
+                                            dataIndex: 'tags',
+                                            key: 'tags',
+                                            render: (tags: string[]) => (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {tags.map((tag) => (
+                                                        <Tag key={tag}>{tag}</Tag>
+                                                    ))}
+                                                </div>
+                                            ),
+                                        },
+                                        {
+                                            title: '阅读时间',
+                                            dataIndex: 'time',
+                                            key: 'time',
+                                            className: 'text-slate-500',
+                                        },
+                                    ]}
+                                />
                             </div>
                         </div>
                     </Card>
 
-                    <div className="h-full flex flex-col gap-6 overflow-hidden">
-                        <Card className="flex-none rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-                            <div className="text-xl font-semibold text-slate-800">今日推荐</div>
-                            <div className="mt-4 space-y-3">
-                                <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-slate-700">
+                    <div className="h-full flex flex-col gap-4 overflow-hidden">
+                        <Card className="flex-none rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                            <div className="text-base font-semibold text-slate-800">今日推荐</div>
+                            <div className="mt-2 space-y-2">
+                                <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-2.5 text-sm text-slate-600">
                                     保持规律作息，能有效改善免疫状态与精神状态。
                                 </div>
-                                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-slate-700">
+                                <div className="rounded-lg bg-blue-50 border border-blue-100 p-2.5 text-sm text-slate-600">
                                     每天饮水 1500ml 左右，有助于维持身体代谢与循环。
                                 </div>
                             </div>
                         </Card>
 
-                        <Card className="flex-1 overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-                            <div className="text-xl font-semibold text-slate-800">健康提醒</div>
-                            <div className="mt-4 space-y-3 overflow-auto pr-1">
-                                <div className="rounded-2xl border border-slate-100 p-4 text-slate-700">尽量减少熬夜，提升睡眠质量。</div>
-                                <div className="rounded-2xl border border-slate-100 p-4 text-slate-700">每周保持 3 次以上适度运动。</div>
-                                <div className="rounded-2xl border border-slate-100 p-4 text-slate-700">合理饮食，少油少糖少盐。</div>
+                        <Card className="flex-1 overflow-hidden rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                            <div className="text-base font-semibold text-slate-800">健康提醒</div>
+                            <div className="mt-2 space-y-2 overflow-auto pr-1">
+                                {healthReminders.length > 0 ? (
+                                    healthReminders.map((reminder, index) => (
+                                        <div key={index} className="rounded-lg border border-slate-100 p-2.5 text-sm text-slate-600 flex items-start gap-2">
+                                            <span className="text-base">{iconMap[reminder.icon] || '📌'}</span>
+                                            <span>{reminder.content}</span>
+                                        </div>
+                                    ))
+                                ):(
+                                    <>
+                                    </>
+                                )}
                             </div>
                         </Card>
 
