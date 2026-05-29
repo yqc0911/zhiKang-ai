@@ -56,4 +56,25 @@ export const getHealthReminders = (location?: string) => {
   return request.get<HealthRemindersResponse>('/api/health-reminders', { params: { location } })
 }
 
+export interface FeatureCard {
+  key: string
+  title: string
+  description: string
+  image: string
+  icon: string
+  tags: string[]
+  path: string
+  accent: string
+}
+
+export interface FeaturesResponse {
+  code: number
+  message: string
+  data: FeatureCard[]
+}
+
+export const getFeatures = () => {
+  return request.get<FeaturesResponse>('/api/features')
+}
+
 export default request

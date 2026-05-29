@@ -1,12 +1,26 @@
 import { Avatar } from 'antd'
 import { LogoutOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const HomePage = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [activeAction, setActiveAction] = useState<'login' | 'signup' | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string>(() => {
+    return localStorage.getItem('avatarUrl') || ''
+  })
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'avatarUrl') {
+        setAvatarUrl(e.newValue || '')
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
   const isLoggedIn = Boolean(localStorage.getItem('token'))
 
   const menuItems = [
@@ -83,7 +97,7 @@ const HomePage = () => {
                 onClick={() => navigate('/profile')}
                 aria-label="个人中心"
               >
-                <Avatar size={30} icon={<UserOutlined />} />
+                <Avatar size={30} src={avatarUrl} icon={<UserOutlined />} />
               </button>
               <button
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"

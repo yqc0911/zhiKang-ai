@@ -7,7 +7,9 @@ import HomePage from '../component/HomePage'
 const ProfilePage = () => {
     const [editOpen, setEditOpen] = useState(false)
     const [avatarOpen, setAvatarOpen] = useState(false)
-    const [avatarUrl, setAvatarUrl] = useState<string>('')
+    const [avatarUrl, setAvatarUrl] = useState<string>(() => {
+        return localStorage.getItem('avatarUrl') || ''
+    })
     const [form] = Form.useForm()
     const [profile, setProfile] = useState({
         name: '张医生',
@@ -206,6 +208,7 @@ const ProfilePage = () => {
                                 const result = e.target?.result
                                 if (result && typeof result === 'string') {
                                     setAvatarUrl(result)
+                                    localStorage.setItem('avatarUrl', result)
                                     message.success('头像上传成功')
                                 }
                             }

@@ -74,13 +74,14 @@ const LoginPage = () => {
                                 <div className="mt-2 text-slate-500">登录后可查看问诊记录与健康档案</div>
                             </div>
 
-                            <div className="space-y-4">
+                            <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4">
                                 <Input
                                     size="large"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     placeholder="请输入手机号或用户名"
                                     prefix={<UserOutlined className="text-slate-400" />}
+                                    autoComplete="username"
                                 />
                                 <Input.Password
                                     size="large"
@@ -88,24 +89,25 @@ const LoginPage = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="请输入密码"
                                     prefix={<LockOutlined className="text-slate-400" />}
+                                    autoComplete="current-password"
                                 />
 
                                 <div className="flex items-center justify-between text-sm text-slate-500">
                                     <Checkbox>记住我</Checkbox>
-                                    <button className="text-blue-600 hover:text-blue-500">忘记密码？</button>
+                                    <button type="button" className="text-blue-600 hover:text-blue-500">忘记密码？</button>
                                 </div>
 
-                                <Button type="primary" size="large" block className="h-11 rounded-xl" onClick={handleLogin}>
+                                <Button type="primary" size="large" block className="h-11 rounded-xl" htmlType="submit">
                                     登录
                                 </Button>
 
                                 <div className="text-center text-sm text-slate-500">
                                     还没有账号？
-                                    <button className="ml-1 text-blue-600 hover:text-blue-500" onClick={() => navigate('/register')}>
+                                    <button type="button" className="ml-1 text-blue-600 hover:text-blue-500" onClick={() => navigate('/register')}>
                                         去注册
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         </Card>
                     </div>
                 </div>

@@ -1,10 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, MessageCircle, Bot, User, Sparkles, Plus, Trash2, MessageSquare } from 'lucide-react';
+import { Send, MessageCircle, Bot, User, Sparkles, Plus, Trash2, MessageSquare, Image as ImageIcon, X, Copy, Check } from 'lucide-react';
+import { Avatar, message as antdMessage } from 'antd';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  image?: string;
   timestamp: number;
 }
 
@@ -31,6 +38,12 @@ const saveThreads = (threads: Thread[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
 };
 
+const normalizeMarkdown = (content: string) =>
+  content
+    .replace(/\n{2,}/g, '\n')
+    .replace(/(^|\n)(\s*[-*+]\s+)(.+)$/gm, (_, prefix, bullet, text) => `${prefix}${bullet}${text.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ')}`)
+    .replace(/(^|\n)(\s*\d+\.\s+)(.+)$/gm, (_, prefix, bullet, text) => `${prefix}${bullet}${text.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ')}`);
+
 const SimpleChat = () => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
@@ -38,6 +51,63 @@ const SimpleChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string>(() => {
+    return localStorage.getItem('avatarUrl') || ''
+  });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!IMAGE_TYPES.includes(file.type)) {
+      alert('请选择有效的图片格式（JPG、PNG、GIF、WebP）');
+      return;
+    }
+
+    if (file.size > IMAGE_MAX_SIZE) {
+      alert('图片大小不能超过 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setSelectedImage(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeSelectedImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const copyMessage = async (messageId: string, content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageId(messageId);
+      antdMessage.success('已复制内容');
+      window.setTimeout(() => {
+        setCopiedMessageId((current) => (current === messageId ? null : current));
+      }, 1500);
+    } catch {
+      antdMessage.error('复制失败，请手动复制');
+    }
+  };
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'avatarUrl') {
+        setAvatarUrl(e.newValue || '')
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   const currentThread = threads.find(t => t.id === currentThreadId);
   const messages = currentThread?.messages || [];
@@ -93,7 +163,7 @@ const SimpleChat = () => {
   }, []);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !selectedImage) || isLoading) return;
 
     let threadId = currentThreadId;
     
@@ -116,6 +186,7 @@ const SimpleChat = () => {
       id: `msg-${Date.now()}`,
       role: 'user',
       content: input.trim(),
+      image: selectedImage || undefined,
       timestamp: Date.now()
     };
 
@@ -136,7 +207,13 @@ const SimpleChat = () => {
     }
     
     setInput('');
+    removeSelectedImage();
     setIsLoading(true);
+
+    const messageWithContent = {
+      ...userMessage,
+      content: userMessage.content || (userMessage.image ? '[图片]' : '')
+    };
 
     try {
       const response = await fetch('http://localhost:3000/api/chat', {
@@ -145,9 +222,10 @@ const SimpleChat = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [...currentMessages, userMessage].map(m => ({
+          messages: [...currentMessages, messageWithContent].map(m => ({
             role: m.role,
-            content: m.content
+            content: m.content,
+            image: m.image
           }))
         })
       });
@@ -273,11 +351,11 @@ const SimpleChat = () => {
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-6 h-6 text-[#89F5E7]" />
-              <h2 className="text-white font-bold text-xl">智能助手</h2>
+              <h2 className="text-white font-bold text-xl"> AI 健康助手</h2>
             </div>
             <button
               onClick={createNewThread}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00685F] text-white rounded-xl hover:bg-[#005550] transition-all duration-200 font-semibold shadow-lg"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg"
             >
               <Plus className="w-5 h-5" />
               <span>新对话</span>
@@ -370,9 +448,9 @@ const SimpleChat = () => {
                 </div>
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-[#213145] mb-2">AI 健康助手</h2>
-                  <p className="text-slate-500 text-lg">您好！我是您的专属健康顾问，有什么可以帮助您的？</p>
+                  <p className="text-slate-500 text-lg">您好，有医学相关的问题都可以问我哦。</p>
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
-                    {["健康咨询", "症状分析", "饮食建议", "运动指导"].map((tag, index) => (
+                    {["写作润色", "翻译", "编程帮助", "知识问答"].map((tag, index) => (
                       <button
                         key={index}
                         onClick={() => setInput(tag)}
@@ -394,26 +472,46 @@ const SimpleChat = () => {
                 >
                   {message.role === 'user' ? (
                     <>
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#213145] flex items-center justify-center shadow-md">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="relative max-w-[70%]">
-                        <div className="bg-[#213145] text-white rounded-2xl rounded-br-md px-5 py-3 shadow-lg">
-                          <p className="text-base leading-relaxed">{message.content}</p>
+                      {avatarUrl ? (
+                        <Avatar src={avatarUrl} size={40} className="flex-shrink-0 shadow-md" />
+                      ) : (
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#213145] flex items-center justify-center shadow-md">
+                          <User className="w-5 h-5 text-white" />
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#213145] rotate-45" />
+                      )}
+                      <div className="relative max-w-[70%]">
+                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-sm px-5 py-3 shadow-lg">
+                          {message.content && <p className="text-base leading-relaxed">{message.content}</p>}
+                          {message.image && (
+                            <div className="mt-3 rounded-lg overflow-hidden">
+                              <img src={message.image} alt="图片消息" className="max-w-full max-h-64 object-contain" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#00685F] flex items-center justify-center shadow-md">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md">
                         <Bot className="w-5 h-5 text-white" />
                       </div>
                       <div className="relative max-w-[70%]">
-                        <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-md px-5 py-3 shadow-sm">
-                          <p className="text-base leading-relaxed text-slate-800">{message.content}</p>
+                        <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-5 py-3 shadow-sm">
+                          <div className="text-base leading-normal text-slate-800 whitespace-pre-wrap break-words [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:text-slate-900 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:text-slate-900 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:text-slate-900 [&_p]:mb-1.5 [&_p]:last:mb-0 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-0 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-0 [&_li]:mb-0 [&_li_p]:mb-0 [&_li_p]:inline [&_li_ul]:mt-0 [&_li_ol]:mt-0 [&_li_ul]:mb-0 [&_li_ol]:mb-0 [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-300 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:text-slate-500 [&_blockquote]:bg-emerald-50/60 [&_blockquote]:rounded-r-lg [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:text-slate-800 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:rounded-2xl [&_pre]:bg-slate-950 [&_pre]:text-slate-100 [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-inherit [&_a]:text-blue-600 [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_table]:my-2 [&_th]:border [&_th]:border-slate-200 [&_th]:bg-slate-100 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_td]:border [&_td]:border-slate-200 [&_td]:px-3 [&_td]:py-2">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizeMarkdown(message.content)}</ReactMarkdown>
+                          </div>
+                          {message.role === 'assistant' && (
+                            <div className="mt-2 flex justify-end">
+                              <button
+                                onClick={() => copyMessage(message.id, message.content)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all text-xs"
+                              >
+                                {copiedMessageId === message.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                <span>{copiedMessageId === message.id ? '已复制' : '复制'}</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-white border-l border-b border-slate-100 rotate-45" />
                       </div>
                     </>
                   )}
@@ -423,14 +521,14 @@ const SimpleChat = () => {
 
             {isLoading && (
               <div className="flex justify-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#00685F] flex items-center justify-center shadow-md">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-md px-5 py-3 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-5 py-3 shadow-sm">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-[#00685F] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-[#00685F] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-[#00685F] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -439,30 +537,65 @@ const SimpleChat = () => {
 
           {/* 输入区域 */}
           <div className="border-t border-slate-100 bg-white px-6 py-4">
-            <div className="flex items-end gap-3">
+            {/* 选中的图片预览 */}
+            {selectedImage && (
+              <div className="mb-3 flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                <img src={selectedImage} alt="选中的图片" className="w-16 h-16 object-cover rounded-lg" />
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600">已选择图片</p>
+                  <p className="text-xs text-slate-400">点击发送按钮发送图片</p>
+                </div>
+                <button
+                  onClick={removeSelectedImage}
+                  className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-3">
               <div className="flex-1 relative">
                 <textarea
-                  className="w-full px-5 py-3.5 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00685F]/20 focus:border-[#00685F] transition-all duration-200 resize-none"
-                  placeholder="输入您的健康问题..."
+                  className="w-full h-12 px-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none"
+                  style={{ paddingTop: '0.6rem', paddingBottom: '0.6rem', lineHeight: '1.5rem' }}
+                  placeholder="输入你的问题..."
                   rows={1}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                 />
               </div>
+              
+              {/* 图片上传按钮 */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-12 h-12 rounded-xl flex items-center justify-center border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
+                disabled={isLoading}
+              >
+                <ImageIcon className="w-5 h-5" />
+              </button>
+              
               <button
                 onClick={handleSend}
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || (!input.trim() && !selectedImage)}
                 className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 ${
-                  isLoading || !input.trim()
+                  isLoading || (!input.trim() && !selectedImage)
                     ? 'bg-slate-300 cursor-not-allowed'
-                    : 'bg-[#00685F] text-white shadow-[#00685F]/30 hover:shadow-xl hover:shadow-[#00685F]/40 hover:scale-105 active:scale-95'
+                    : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95'
                 }`}
               >
                 <Send className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-xs text-slate-400 text-center mt-2">按 Enter 发送，Shift + Enter 换行</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <p className="text-xs text-slate-400 text-center mt-2">按 Enter 发送，Shift + Enter 换行 | 支持图片上传</p>
           </div>
         </div>
       </div>
