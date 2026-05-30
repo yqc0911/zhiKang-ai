@@ -1,3 +1,4 @@
+import CryptoJS from 'crypto-js'
 import request from './servers'
 
 export interface LoginParams {
@@ -5,8 +6,29 @@ export interface LoginParams {
   password: string
 }
 
+export interface RegisterParams {
+  name: string
+  phone: string
+  password: string
+}
+
+const md5 = (value: string) => CryptoJS.MD5(value).toString()
+
 export const login = (data: LoginParams) => {
-  return request.post('/api/login', data)
+  return request.post('/api/login', {
+    username: data.username,
+    password: md5(data.password),
+  })
+}
+
+export const register = (data: RegisterParams) => {
+  return request.post('/api/register', {
+    name: data.name,
+    phone: data.phone,
+    password: md5(data.password),
+  }, {
+    validateStatus: (status) => status < 500,
+  })
 }
 
 export const getToken = () => localStorage.getItem('token')
