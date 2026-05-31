@@ -13,6 +13,7 @@ interface Message {
   content: string;
   image?: string;
   timestamp: number;
+  bodyPart?: string;
 }
 
 interface Thread {
@@ -21,6 +22,11 @@ interface Thread {
   messages: Message[];
   createdAt: number;
   updatedAt: number;
+}
+
+interface SimpleChatProps {
+  initialPainParts?: string[]
+  initialSymptoms?: string[]
 }
 
 const STORAGE_KEY = 'chat_threads';
@@ -44,7 +50,7 @@ const normalizeMarkdown = (content: string) =>
     .replace(/(^|\n)(\s*[-*+]\s+)(.+)$/gm, (_, prefix, bullet, text) => `${prefix}${bullet}${text.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ')}`)
     .replace(/(^|\n)(\s*\d+\.\s+)(.+)$/gm, (_, prefix, bullet, text) => `${prefix}${bullet}${text.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ')}`);
 
-const SimpleChat = () => {
+const SimpleChat = ({ initialPainParts = [], initialSymptoms = [] }: SimpleChatProps) => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
   const [input, setInput] = useState('');
@@ -56,7 +62,19 @@ const SimpleChat = () => {
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [pendingBodyPart, setPendingBodyPart] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const extraContext = [
+    initialPainParts.length ? `疼痛部位：${initialPainParts.join('、')}` : '',
+    initialSymptoms.length ? `自查症状：${initialSymptoms.join('、')}` : '',
+  ].filter(Boolean).join('；')
+
+  useEffect(() => {
+    if (extraContext) {
+      setInput((prev) => (prev ? prev : `我刚才在自查中记录了：${extraContext}，请结合这些信息帮我分析。`))
+    }
+  }, [extraContext])
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -187,6 +205,7 @@ const SimpleChat = () => {
       role: 'user',
       content: input.trim(),
       image: selectedImage || undefined,
+      bodyPart: pendingBodyPart || undefined,
       timestamp: Date.now()
     };
 
@@ -207,6 +226,7 @@ const SimpleChat = () => {
     }
     
     setInput('');
+    setPendingBodyPart(null);
     removeSelectedImage();
     setIsLoading(true);
 
@@ -257,7 +277,7 @@ const SimpleChat = () => {
         const { done, value } = await reader.read();
         
         if (done) break;
-
+        
         const text = decoder.decode(value);
         const lines = text.split('\n\n').filter(line => line.startsWith('data:'));
         
@@ -342,12 +362,8 @@ const SimpleChat = () => {
 
   return (
     <div className="w-full h-full bg-slate-50 p-4 md:p-6 lg:p-8 flex items-center justify-center overflow-hidden">
-      {/* 整体容器 */}
       <div className="w-full h-full max-w-7xl flex rounded-2xl overflow-hidden shadow-2xl">
-        
-        {/* 侧边栏 - 深蓝灰色背景 */}
         <div className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-[#213145] flex flex-col`}>
-          {/* 侧边栏头部 */}
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-6 h-6 text-[#89F5E7]" />
@@ -361,8 +377,6 @@ const SimpleChat = () => {
               <span>新对话</span>
             </button>
           </div>
-          
-          {/* 对话列表 */}
           <div className="flex-1 overflow-y-auto px-3 pb-3">
             <div className="text-[#89F5E7]/60 text-xs font-medium uppercase tracking-wider px-2 mb-2">历史记录</div>
             {threads.length === 0 ? (
@@ -404,9 +418,7 @@ const SimpleChat = () => {
           </div>
         </div>
 
-        {/* 主聊天区域 - 白底 */}
         <div className="flex-1 flex flex-col bg-white min-w-0">
-          {/* 聊天头部 - 深青色 */}
           <div className="px-6 py-4 border-b border-slate-100 bg-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#00685F] flex items-center justify-center shadow-md">
@@ -419,7 +431,6 @@ const SimpleChat = () => {
                   在线
                 </p>
               </div>
-              {/* 侧边栏收起/展开按钮 */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="ml-auto p-2 rounded-lg hover:bg-slate-100 transition-colors"
@@ -431,7 +442,6 @@ const SimpleChat = () => {
             </div>
           </div>
 
-          {/* 消息区域 */}
           <div 
             ref={viewportRef}
             className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-slate-50/50"
@@ -481,6 +491,11 @@ const SimpleChat = () => {
                       )}
                       <div className="relative max-w-[70%]">
                         <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-sm px-5 py-3 shadow-lg">
+                          {message.bodyPart && (
+                            <div className="mb-2 inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/90">
+                              记录部位：{message.bodyPart}
+                            </div>
+                          )}
                           {message.content && <p className="text-base leading-relaxed">{message.content}</p>}
                           {message.image && (
                             <div className="mt-3 rounded-lg overflow-hidden">
@@ -518,84 +533,54 @@ const SimpleChat = () => {
                 </div>
               ))
             )}
-
-            {isLoading && (
-              <div className="flex justify-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md">
-                  <Bot className="w-5 h-5 text-white" />
-                </div>
-                <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-5 py-3 shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* 输入区域 */}
-          <div className="border-t border-slate-100 bg-white px-6 py-4">
-            {/* 选中的图片预览 */}
-            {selectedImage && (
-              <div className="mb-3 flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <img src={selectedImage} alt="选中的图片" className="w-16 h-16 object-cover rounded-lg" />
-                <div className="flex-1">
-                  <p className="text-sm text-slate-600">已选择图片</p>
-                  <p className="text-xs text-slate-400">点击发送按钮发送图片</p>
+          <div className="border-t border-slate-100 bg-white p-4">
+            <div className="mx-auto max-w-4xl">
+              {pendingBodyPart && (
+                <div className="mb-3 inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-3 py-2 text-blue-700">
+                  <span className="text-sm font-medium">已选择疼痛部位：{pendingBodyPart}</span>
+                  <button onClick={() => setPendingBodyPart(null)} className="text-blue-500 hover:text-blue-700">
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
+              )}
+              {selectedImage && (
+                <div className="mb-3 inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                  <img src={selectedImage} alt="预览" className="h-12 w-12 rounded-lg object-cover" />
+                  <span className="text-sm text-slate-600">已选择图片</span>
+                  <button onClick={removeSelectedImage} className="text-slate-400 hover:text-slate-600">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
                 <button
-                  onClick={removeSelectedImage}
-                  className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm hover:text-[#00685F]"
                 >
-                  <X className="w-5 h-5 text-slate-500" />
+                  <ImageIcon className="h-5 w-5" />
                 </button>
-              </div>
-            )}
-            
-            <div className="flex items-center gap-3">
-              <div className="flex-1 relative">
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                 <textarea
-                  className="w-full h-12 px-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none"
-                  style={{ paddingTop: '0.6rem', paddingBottom: '0.6rem', lineHeight: '1.5rem' }}
-                  placeholder="输入你的问题..."
-                  rows={1}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyPress}
+                  placeholder={extraContext ? `已带入：${extraContext}` : '输入你的问题，Shift + Enter 换行'}
+                  className="min-h-[44px] max-h-40 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-slate-700 outline-none placeholder:text-slate-400"
+                  rows={1}
                 />
+                <button
+                  onClick={handleSend}
+                  disabled={isLoading}
+                  className="flex h-11 items-center gap-2 rounded-xl bg-[#00685F] px-5 text-white shadow-md transition-colors hover:bg-[#00534c] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>{isLoading ? '发送中' : '发送'}</span>
+                </button>
               </div>
-              
-              {/* 图片上传按钮 */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-12 h-12 rounded-xl flex items-center justify-center border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
-                disabled={isLoading}
-              >
-                <ImageIcon className="w-5 h-5" />
-              </button>
-              
-              <button
-                onClick={handleSend}
-                disabled={isLoading || (!input.trim() && !selectedImage)}
-                className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 ${
-                  isLoading || (!input.trim() && !selectedImage)
-                    ? 'bg-slate-300 cursor-not-allowed'
-                    : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95'
-                }`}
-              >
-                <Send className="w-5 h-5" />
-              </button>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
-            <p className="text-xs text-slate-400 text-center mt-2">按 Enter 发送，Shift + Enter 换行 | 支持图片上传</p>
           </div>
         </div>
       </div>

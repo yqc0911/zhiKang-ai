@@ -22,11 +22,14 @@ export const login = (data: LoginParams) => {
 }
 
 export const register = (data: RegisterParams) => {
-  return request.post('/api/register', {
-    name: data.name,
-    phone: data.phone,
-    password: md5(data.password),
-  }, {
+  return request.request({
+    method: 'post',
+    url: '/api/register',
+    data: {
+      name: data.name,
+      phone: data.phone,
+      password: md5(data.password),
+    },
     validateStatus: (status) => status < 500,
   })
 }
