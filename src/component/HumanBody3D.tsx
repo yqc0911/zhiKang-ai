@@ -8,12 +8,24 @@ export type BodyPart = {
 
 const bodyParts: BodyPart[] = [
     { id: 'head', label: '头部' },
+    { id: 'neck', label: '颈部' },
     { id: 'chest', label: '胸部' },
     { id: 'abdomen', label: '腹部' },
+    { id: 'leftShoulder', label: '左肩' },
+    { id: 'rightShoulder', label: '右肩' },
     { id: 'leftArm', label: '左上臂' },
     { id: 'rightArm', label: '右上臂' },
-    { id: 'leftLeg', label: '左大腿' },
-    { id: 'rightLeg', label: '右大腿' },
+    { id: 'leftForearm', label: '左前臂' },
+    { id: 'rightForearm', label: '右前臂' },
+    { id: 'leftHand', label: '左手' },
+    { id: 'rightHand', label: '右手' },
+    { id: 'pelvis', label: '骨盆' },
+    { id: 'leftThigh', label: '左大腿' },
+    { id: 'rightThigh', label: '右大腿' },
+    { id: 'leftCalf', label: '左小腿' },
+    { id: 'rightCalf', label: '右小腿' },
+    { id: 'leftFoot', label: '左脚' },
+    { id: 'rightFoot', label: '右脚' },
 ]
 
 interface HumanBody3DProps {
@@ -23,9 +35,6 @@ interface HumanBody3DProps {
 
 const HumanBody3D = ({ onSelectPart, selectedParts }: HumanBody3DProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
-    const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
-    const rafRef = useRef<number | null>(null)
-
     const selectedSet = useMemo(() => new Set(selectedParts), [selectedParts])
 
     useEffect(() => {
@@ -35,97 +44,146 @@ const HumanBody3D = ({ onSelectPart, selectedParts }: HumanBody3DProps) => {
         const scene = new THREE.Scene()
         scene.background = new THREE.Color('#f8fafc')
 
-        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
-        camera.position.set(0, 1.35, 5.2)
+        const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
+        camera.position.set(0, 0.9, 12.5)
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-        rendererRef.current = renderer
+        renderer.outputColorSpace = THREE.SRGBColorSpace
+        renderer.setClearColor(0xf8fafc, 1)
         container.appendChild(renderer.domElement)
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.8)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.2)
         scene.add(ambientLight)
-        const dirLight = new THREE.DirectionalLight(0xffffff, 2.5)
-        dirLight.position.set(2, 4, 5)
-        scene.add(dirLight)
+
+        const topLight = new THREE.DirectionalLight(0xffffff, 2.8)
+        topLight.position.set(2, 5, 6)
+        scene.add(topLight)
+
+        const frontLight = new THREE.DirectionalLight(0xcfe8ff, 1.4)
+        frontLight.position.set(0, 1.5, 5)
+        scene.add(frontLight)
 
         const bodyGroup = new THREE.Group()
+        bodyGroup.position.set(0, 0, 0)
         scene.add(bodyGroup)
 
-        const createPart = (geometry: THREE.BufferGeometry, materialColor: number, position: [number, number, number], name: string, scale?: [number, number, number]) => {
-            const mesh = new THREE.Mesh(
-                geometry,
-                new THREE.MeshStandardMaterial({
-                    color: selectedSet.has(name) ? 0x0ea5e9 : materialColor,
-                    metalness: 0.05,
-                    roughness: 0.65,
-                }),
-            )
-            mesh.position.set(position[0], position[1], position[2])
+        const createMaterial = (name: string, color: number) =>
+            new THREE.MeshStandardMaterial({
+                color: selectedSet.has(name) ? 0x38bdf8 : color,
+                metalness: 0.08,
+                roughness: 0.56,
+            })
+
+        const createMesh = (
+            geometry: THREE.BufferGeometry,
+            color: number,
+            name: string,
+            position: [number, number, number],
+            rotation?: [number, number, number],
+        ) => {
+            const mesh = new THREE.Mesh(geometry, createMaterial(name, color))
             mesh.name = name
-            if (scale) mesh.scale.set(scale[0], scale[1], scale[2])
+            mesh.position.set(position[0], position[1], position[2])
+            if (rotation) mesh.rotation.set(rotation[0], rotation[1], rotation[2])
             bodyGroup.add(mesh)
             return mesh
         }
 
-        const head = createPart(new THREE.SphereGeometry(0.45, 32, 32), 0xf8d7c4, [0, 2.2, 0], 'head')
-        const chest = createPart(new THREE.CylinderGeometry(0.72, 0.85, 1.3, 24), 0xcbd5e1, [0, 0.95, 0], 'chest')
-        const abdomen = createPart(new THREE.CylinderGeometry(0.64, 0.72, 0.85, 24), 0xdbeafe, [0, 0.05, 0], 'abdomen')
-        const leftArm = createPart(new THREE.CylinderGeometry(0.16, 0.16, 1.1, 20), 0xfbcfe8, [-1.1, 1.0, 0], 'leftArm', [1, 1, 1])
-        const rightArm = createPart(new THREE.CylinderGeometry(0.16, 0.16, 1.1, 20), 0xfbcfe8, [1.1, 1.0, 0], 'rightArm', [1, 1, 1])
-        const leftLeg = createPart(new THREE.CylinderGeometry(0.22, 0.24, 1.4, 20), 0xd9f99d, [-0.35, -1.0, 0], 'leftLeg', [1, 1, 1])
-        const rightLeg = createPart(new THREE.CylinderGeometry(0.22, 0.24, 1.4, 20), 0xd9f99d, [0.35, -1.0, 0], 'rightLeg', [1, 1, 1])
+        const head = createMesh(new THREE.SphereGeometry(0.58, 48, 48), 0xf8d7c4, 'head', [0, 4.1, 0])
+        const neck = createMesh(new THREE.CylinderGeometry(0.18, 0.22, 0.45, 32), 0xf1c7ad, 'neck', [0, 3.45, 0])
+        const chest = createMesh(new THREE.CylinderGeometry(0.95, 1.05, 1.55, 40), 0xdbeafe, 'chest', [0, 2.5, 0])
+        const abdomen = createMesh(new THREE.CylinderGeometry(0.82, 0.95, 1.0, 36), 0xe0f2fe, 'abdomen', [0, 1.35, 0])
+        const pelvis = createMesh(new THREE.CylinderGeometry(0.78, 0.86, 0.55, 36), 0xbfdbfe, 'pelvis', [0, 0.55, 0])
 
-        const parts = [head, chest, abdomen, leftArm, rightArm, leftLeg, rightLeg]
+        const leftShoulder = createMesh(new THREE.SphereGeometry(0.22, 24, 24), 0xfbcfe8, 'leftShoulder', [-1.1, 2.9, 0])
+        const rightShoulder = createMesh(new THREE.SphereGeometry(0.22, 24, 24), 0xfbcfe8, 'rightShoulder', [1.1, 2.9, 0])
+        const leftArm = createMesh(new THREE.CylinderGeometry(0.18, 0.22, 1.2, 28), 0xf9a8d4, 'leftArm', [-1.95, 2.25, 0], [0, 0, Math.PI / 2])
+        const rightArm = createMesh(new THREE.CylinderGeometry(0.18, 0.22, 1.2, 28), 0xf9a8d4, 'rightArm', [1.95, 2.25, 0], [0, 0, Math.PI / 2])
+        const leftForearm = createMesh(new THREE.CylinderGeometry(0.16, 0.2, 1.1, 28), 0xf9a8d4, 'leftForearm', [-2.85, 1.85, 0], [0, 0, Math.PI / 2])
+        const rightForearm = createMesh(new THREE.CylinderGeometry(0.16, 0.2, 1.1, 28), 0xf9a8d4, 'rightForearm', [2.85, 1.85, 0], [0, 0, Math.PI / 2])
+        const leftHand = createMesh(new THREE.SphereGeometry(0.18, 24, 24), 0xf8d7c4, 'leftHand', [-3.55, 1.85, 0])
+        const rightHand = createMesh(new THREE.SphereGeometry(0.18, 24, 24), 0xf8d7c4, 'rightHand', [3.55, 1.85, 0])
 
-        const clickArea = new THREE.Mesh(
-            new THREE.BoxGeometry(5.5, 6, 3),
-            new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })
-        )
-        clickArea.position.set(0, 0.3, 0)
-        scene.add(clickArea)
+        const leftThigh = createMesh(new THREE.CylinderGeometry(0.26, 0.3, 1.45, 28), 0xd9f99d, 'leftThigh', [-0.38, -0.65, 0])
+        const rightThigh = createMesh(new THREE.CylinderGeometry(0.26, 0.3, 1.45, 28), 0xd9f99d, 'rightThigh', [0.38, -0.65, 0])
+        const leftCalf = createMesh(new THREE.CylinderGeometry(0.22, 0.24, 1.4, 28), 0x86efac, 'leftCalf', [-0.38, -1.9, 0])
+        const rightCalf = createMesh(new THREE.CylinderGeometry(0.22, 0.24, 1.4, 28), 0x86efac, 'rightCalf', [0.38, -1.9, 0])
+        const leftFoot = createMesh(new THREE.BoxGeometry(0.45, 0.2, 0.8), 0x93c5fd, 'leftFoot', [-0.38, -2.75, 0.18])
+        const rightFoot = createMesh(new THREE.BoxGeometry(0.45, 0.2, 0.8), 0x93c5fd, 'rightFoot', [0.38, -2.75, 0.18])
+
+        const parts = [
+            head,
+            neck,
+            chest,
+            abdomen,
+            pelvis,
+            leftShoulder,
+            rightShoulder,
+            leftArm,
+            rightArm,
+            leftForearm,
+            rightForearm,
+            leftHand,
+            rightHand,
+            leftThigh,
+            rightThigh,
+            leftCalf,
+            rightCalf,
+            leftFoot,
+            rightFoot,
+        ]
 
         const raycaster = new THREE.Raycaster()
         const pointer = new THREE.Vector2()
+        const targetRotation = { x: -0.08, y: 0 }
 
-        const animate = () => {
-            bodyGroup.rotation.y += 0.004
-            renderer.render(scene, camera)
-            rafRef.current = window.requestAnimationFrame(animate)
-        }
-
-        const updateSize = () => {
+        const fitContainer = () => {
             const { clientWidth, clientHeight } = container
             renderer.setSize(clientWidth, clientHeight, false)
             camera.aspect = clientWidth / clientHeight
             camera.updateProjectionMatrix()
         }
 
-        const handleClick = (event: MouseEvent) => {
+        const onPointerMove = (event: PointerEvent) => {
             const rect = renderer.domElement.getBoundingClientRect()
             pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
             pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1)
+        }
 
+        const onClick = () => {
             raycaster.setFromCamera(pointer, camera)
-            const intersects = raycaster.intersectObjects(parts, false)
-            if (intersects.length > 0) {
-                const partName = intersects[0].object.name
+            const hits = raycaster.intersectObjects(parts, false)
+            if (hits.length > 0) {
+                const partName = hits[0].object.name
                 const label = bodyParts.find((part) => part.id === partName)?.label || partName
                 onSelectPart(label)
             }
         }
 
-        updateSize()
+        let frame = 0
+        const animate = () => {
+            frame += 1
+            bodyGroup.rotation.y = Math.sin(frame * 0.01) * 0.08 + targetRotation.y
+            bodyGroup.rotation.x = targetRotation.x
+            bodyGroup.position.y = 0.55 + Math.sin(frame * 0.018) * 0.02
+            renderer.render(scene, camera)
+            requestAnimationFrame(animate)
+        }
+
+        fitContainer()
         animate()
-        renderer.domElement.addEventListener('click', handleClick)
-        window.addEventListener('resize', updateSize)
+
+        renderer.domElement.addEventListener('pointermove', onPointerMove)
+        renderer.domElement.addEventListener('click', onClick)
+        window.addEventListener('resize', fitContainer)
 
         return () => {
-            renderer.domElement.removeEventListener('click', handleClick)
-            window.removeEventListener('resize', updateSize)
-            if (rafRef.current) window.cancelAnimationFrame(rafRef.current)
-            parts.forEach((mesh) => mesh.geometry.dispose())
-            ;[head, chest, abdomen, leftArm, rightArm, leftLeg, rightLeg].forEach((mesh) => {
+            renderer.domElement.removeEventListener('pointermove', onPointerMove)
+            renderer.domElement.removeEventListener('click', onClick)
+            window.removeEventListener('resize', fitContainer)
+            parts.forEach((mesh) => {
+                mesh.geometry.dispose()
                 ;(mesh.material as THREE.Material).dispose()
             })
             renderer.dispose()
@@ -133,7 +191,7 @@ const HumanBody3D = ({ onSelectPart, selectedParts }: HumanBody3DProps) => {
         }
     }, [onSelectPart, selectedSet])
 
-    return <div ref={containerRef} className="h-full min-h-[420px] w-full rounded-3xl bg-slate-50" />
+    return <div ref={containerRef} className="h-full min-h-[560px] w-full overflow-hidden rounded-3xl bg-slate-50" />
 }
 
 export default HumanBody3D

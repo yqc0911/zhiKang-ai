@@ -1,46 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Button, Card, Divider, InputNumber, Tag } from 'antd'
 import { ArrowLeftOutlined, DeleteOutlined, SafetyCertificateOutlined, ShoppingCartOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import HomePage from '../component/HomePage'
 import Footer from '../component/Footer'
-
-interface CartItem {
-  id: number
-  name: string
-  category: string
-  originalPrice: number
-  discountedPrice: number
-  quantity: number
-  image: string
-  isHotPromotion?: boolean
-}
-
-const initialCartItems: CartItem[] = [
-  {
-    id: 1,
-    name: '成人复合维生素营养片',
-    category: '维生素',
-    originalPrice: 89,
-    discountedPrice: 76,
-    quantity: 1,
-    image: 'https://picsum.photos/seed/cart-vitamin/400/400',
-    isHotPromotion: true,
-  },
-  {
-    id: 2,
-    name: '中老年钙维D营养片',
-    category: '钙片',
-    originalPrice: 128,
-    discountedPrice: 109,
-    quantity: 2,
-    image: 'https://picsum.photos/seed/cart-calcium/400/400',
-  },
-]
+import { useCartStore } from '../store/cartStore'
 
 const Cart = () => {
   const navigate = useNavigate()
-  const [items, setItems] = useState(initialCartItems)
+  const items = useCartStore((state) => state.items)
+  const updateQuantityStore = useCartStore((state) => state.updateQuantity)
+  const removeItemStore = useCartStore((state) => state.removeItem)
 
   const totalPrice = useMemo(
     () => items.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0),
@@ -53,11 +23,11 @@ const Cart = () => {
   )
 
   const updateQuantity = (id: number, quantity: number) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, quantity } : item)))
+    updateQuantityStore(id, quantity)
   }
 
   const removeItem = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
+    removeItemStore(id)
   }
 
   return (

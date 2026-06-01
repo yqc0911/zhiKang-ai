@@ -1,7 +1,8 @@
-import { Avatar } from 'antd'
+import { Avatar, Badge } from 'antd'
 import { LogoutOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useCartStore } from '../store/cartStore'
 
 const HomePage = () => {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ const HomePage = () => {
   }, [])
 
   const isLoggedIn = Boolean(localStorage.getItem('token'))
+  const cartCount = useCartStore((state) => state.cartCount)
 
   const menuItems = [
     { key: 'home', label: '首页', path: '/' },
@@ -85,13 +87,15 @@ const HomePage = () => {
         <div className="flex items-center gap-4 self-start text-sm font-medium lg:self-auto">
           {isLoggedIn ? (
             <>
-              <button
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
-                onClick={() => navigate('/cart')}
-                aria-label="购物车"
-              >
-                <ShoppingCartOutlined className="text-lg" />
-              </button>
+              <Badge count={cartCount} size="small" overflowCount={99} className="[&_.ant-badge-count]:bg-red-500">
+                <button
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
+                  onClick={() => navigate('/cart')}
+                  aria-label="购物车"
+                >
+                  <ShoppingCartOutlined className="text-lg" />
+                </button>
+              </Badge>
               <button
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
                 onClick={() => navigate('/profile')}
