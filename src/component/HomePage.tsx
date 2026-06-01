@@ -87,13 +87,20 @@ const HomePage = () => {
         <div className="flex items-center gap-4 self-start text-sm font-medium lg:self-auto">
           {isLoggedIn ? (
             <>
-              <Badge count={cartCount} size="small" overflowCount={99} className="[&_.ant-badge-count]:bg-red-500">
+              <Badge
+                count={cartCount}
+                size="small"
+                overflowCount={99}
+                offset={[-6, 6]}
+                showZero={false}
+                className="[&_.ant-badge-count]:bg-red-500 [&_.ant-badge-count]:text-[10px] [&_.ant-badge-count]:min-w-[16px] [&_.ant-badge-count]:h-4 [&_.ant-badge-count]:leading-4 [&_.ant-badge-count]:px-1 [&_.ant-badge-count]:rounded-full [&_.ant-badge-count]:shadow-md"
+              >
                 <button
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
+                  className="group flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br from-white to-slate-50 text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-600 hover:shadow-[0_14px_40px_rgba(74,144,255,0.18)] active:translate-y-0"
                   onClick={() => navigate('/cart')}
                   aria-label="购物车"
                 >
-                  <ShoppingCartOutlined className="text-lg" />
+                  <ShoppingCartOutlined className="text-lg transition-transform duration-200 group-hover:scale-110" />
                 </button>
               </Badge>
               <button
