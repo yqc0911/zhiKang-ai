@@ -1,72 +1,143 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Modal, Skeleton, Tag } from 'antd'
-import { CheckCircleOutlined, InfoCircleOutlined, SafetyCertificateOutlined, ShoppingCartOutlined, StarFilled } from '@ant-design/icons'
+import { Button, Card, Modal, Skeleton, Tag, message } from 'antd'
+import { CheckCircleOutlined, InfoCircleOutlined, SafetyCertificateOutlined, StarFilled } from '@ant-design/icons'
 import HomePage from '../component/HomePage'
 import Footer from '../component/Footer'
+import { getProducts, getShopCategories, type ProductItem } from '../utils/request'
 
-const categories = ['全部', '维生素', '钙片', '蛋白营养', '益生菌', '日常保健']
-
-const productTemplates = [
-  { name: '成人复合维生素营养片', category: '维生素', description: '补充日常饮食所需多种维生素与矿物质，适合健康成年人日常营养支持。', price: 89, seed: 'vitamin', tags: ['膳食营养补充', '非药品', '每日保健'] },
-  { name: '中老年钙维D营养片', category: '钙片', description: '钙与维生素D科学搭配，辅助补充骨骼健康所需营养，不替代药物治疗。', price: 128, seed: 'calcium', tags: ['钙营养', '含维D', '非药品'] },
-  { name: '高蛋白营养粉', category: '蛋白营养', description: '适合运动、恢复期营养补充及日常蛋白摄入不足人群，口感细腻易冲泡。', price: 169, seed: 'protein', tags: ['蛋白补充', '营养支持', '非药品'] },
-  { name: '益生菌冻干粉', category: '益生菌', description: '多菌株配方，帮助维持肠道菌群平衡，适合作为日常健康管理补充。', price: 99, seed: 'probiotic', tags: ['肠道健康', '独立包装', '非药品'] },
-  { name: '蓝莓叶黄素酯片', category: '日常保健', description: '含叶黄素酯与蓝莓提取物，适合长时间用眼人群作为日常营养补充。', price: 119, seed: 'lutein', tags: ['护眼营养', '蓝莓配方', '非药品'] },
-  { name: '鱼油软胶囊', category: '日常保健', description: '富含不饱和脂肪酸，适合作为日常膳食脂肪酸补充来源。', price: 139, seed: 'fish-oil', tags: ['脂肪酸补充', '软胶囊', '非药品'] },
-  { name: '维生素C咀嚼片', category: '维生素', description: '酸甜口感，帮助补充日常维生素C摄入，适合办公与家庭常备。', price: 59, seed: 'vitamin-c', tags: ['维C补充', '咀嚼片', '非药品'] },
-  { name: '儿童成长钙营养片', category: '钙片', description: '针对儿童日常钙营养补充设计，建议在成人指导下按说明使用。', price: 108, seed: 'kids-calcium', tags: ['儿童营养', '钙补充', '非药品'] },
-]
-
-const createProduct = (id: number) => {
-  const template = productTemplates[(id - 1) % productTemplates.length]
-  const batch = Math.ceil(id / productTemplates.length)
-  const originalPrice = template.price + (batch - 1) * 6
-  const discount = [0.88, 0.85, 0.8, 0.75][id % 4]
-  const baseDiscountedPrice = Math.round(originalPrice * discount)
-  const isHotPromotion = id % 5 === 0
-  const finalPrice = isHotPromotion ? Math.round(baseDiscountedPrice * 0.8) : baseDiscountedPrice
-
-  return {
-    id,
-    name: batch > 1 ? `${template.name} ${batch}代` : template.name,
-    category: template.category,
-    description: template.description,
-    originalPrice: `¥${originalPrice}`,
-    discountedPrice: `¥${baseDiscountedPrice}`,
-    finalPrice: `¥${finalPrice}`,
-    discountLabel: `${Math.round(discount * 10)}折`,
-    isHotPromotion,
-    image: `https://picsum.photos/seed/${template.seed}-${id}/800/600`,
-    tags: template.tags,
-    score: (4.6 + (id % 4) * 0.1).toFixed(1),
-  }
-}
-
-const allProducts = Array.from({ length: 40 }, (_, index) => createProduct(index + 1))
 const pageSize = 8
 const skeletonItems = Array.from({ length: pageSize }, (_, index) => index)
 
+type ProductCardProps = {
+  product: ProductItem
+  index: number
+  onViewDetails: (productId: number) => void
+}
+
+const ProductCard = ({ product, index, onViewDetails }: ProductCardProps) => {
+  return (
+    <Card
+      hoverable
+      className="group animate-fade-up overflow-hidden rounded-3xl border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)]"
+      style={{ animationDelay: `${(index % pageSize) * 80}ms`, animationDuration: '0.8s' }}
+      cover={
+        <div className="relative h-52 overflow-hidden">
+          <img src={product.image} alt={product.name} draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-blue-600 shadow-sm">{product.category}</div>
+          {product.isHotPromotion && (
+            <div className="absolute right-4 top-4 rounded-full bg-red-500 px-3 py-1 text-sm font-semibold text-white shadow-lg shadow-red-200">
+              热促 8折
+            </div>
+          )}
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-slate-900">{product.name}</h3>
+            <span className="flex items-center gap-1 text-sm text-amber-500">
+              <StarFilled />
+              {product.score}
+            </span>
+          </div>
+          <p className="mt-2 min-h-18 text-sm leading-6 text-slate-500">{product.description}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {product.tags.map((tag) => (
+            <Tag key={tag} className="rounded-full border-slate-200 px-2 py-1 text-slate-500">
+              {tag}
+            </Tag>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+          <div>
+            <div className="text-xs text-slate-400">折后展示价</div>
+            <div className="flex items-end gap-2">
+              <span className="text-2xl font-bold text-red-500">{product.finalPrice}</span>
+              <span className="mb-0.5 text-sm text-slate-400 line-through">{product.originalPrice}</span>
+            </div>
+            {product.isHotPromotion && <div className="mt-1 text-xs font-medium text-red-500">热促商品：折后价再享 8 折</div>}
+          </div>
+          <Button className="rounded-full" onClick={() => onViewDetails(product.id)}>
+            查看详情
+          </Button>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 const Shop = () => {
   const navigate = useNavigate()
+  const [categories, setCategories] = useState<string[]>(['全部'])
   const [activeCategory, setActiveCategory] = useState('全部')
   const [visibleCount, setVisibleCount] = useState(pageSize)
   const [isLoading, setIsLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [guideOpen, setGuideOpen] = useState(false)
+  const [products, setProducts] = useState<ProductItem[]>([])
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const productsSectionRef = useRef<HTMLElement | null>(null)
 
-  const filteredProducts = useMemo(() => {
-    if (activeCategory === '全部') {
-      return allProducts
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchCategories = async () => {
+      try {
+        const response = await getShopCategories()
+        if (!cancelled) {
+          setCategories(response.data.data)
+        }
+      } catch {
+        if (!cancelled) {
+          setCategories(['全部'])
+        }
+      }
     }
 
-    return allProducts.filter((product) => product.category === activeCategory)
+    void fetchCategories()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchProducts = async () => {
+      setInitialLoading(true)
+      try {
+        const response = await getProducts(activeCategory)
+        if (!cancelled) {
+          setProducts(response.data.data)
+        }
+      } catch {
+        if (!cancelled) {
+          message.error('商品数据加载失败，请稍后重试')
+          setProducts([])
+        }
+      } finally {
+        if (!cancelled) {
+          setVisibleCount(pageSize)
+          setInitialLoading(false)
+        }
+      }
+    }
+
+    void fetchProducts()
+
+    return () => {
+      cancelled = true
+    }
   }, [activeCategory])
 
-  const visibleProducts = filteredProducts.slice(0, visibleCount)
-  const hasMore = visibleCount < filteredProducts.length
+  const visibleProducts = useMemo(() => products.slice(0, visibleCount), [products, visibleCount])
+  const hasMore = visibleCount < products.length
 
   const loadMore = () => {
     if (isLoading || !hasMore) {
@@ -75,7 +146,7 @@ const Shop = () => {
 
     setIsLoading(true)
     window.setTimeout(() => {
-      setVisibleCount((count) => Math.min(count + pageSize, filteredProducts.length))
+      setVisibleCount((count) => Math.min(count + pageSize, products.length))
       setIsLoading(false)
     }, 500)
   }
@@ -86,17 +157,6 @@ const Shop = () => {
       block: 'start',
     })
   }
-
-  useEffect(() => {
-    setInitialLoading(true)
-    setVisibleCount(pageSize)
-
-    const timer = window.setTimeout(() => {
-      setInitialLoading(false)
-    }, 600)
-
-    return () => window.clearTimeout(timer)
-  }, [activeCategory])
 
   useEffect(() => {
     const target = loadMoreRef.current
@@ -117,7 +177,7 @@ const Shop = () => {
     observer.observe(target)
 
     return () => observer.disconnect()
-  }, [hasMore, isLoading, filteredProducts.length])
+  }, [hasMore, isLoading, products.length])
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -135,12 +195,7 @@ const Shop = () => {
               本页面仅展示保健食品、营养补充剂、钙片等健康产品信息。平台严格禁止售卖处方药、治疗类药品及任何需医疗许可销售的药品。
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button
-                size="large"
-                type="primary"
-                className="h-12 rounded-full bg-slate-900 px-8 hover:bg-slate-800"
-                onClick={scrollToProducts}
-              >
+              <Button size="large" type="primary" className="h-12 rounded-full bg-slate-900 px-8 hover:bg-slate-800" onClick={scrollToProducts}>
                 浏览健康产品
               </Button>
               <Button
@@ -206,60 +261,7 @@ const Shop = () => {
                 </Card>
               ))}
 
-            {!initialLoading && visibleProducts.map((product, index) => (
-              <Card
-                key={product.id}
-                hoverable
-                className="group animate-fade-up overflow-hidden rounded-3xl border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)]"
-                style={{ animationDelay: `${(index % pageSize) * 80}ms`, animationDuration: '0.8s' }}
-                cover={
-                  <div className="relative h-52 overflow-hidden">
-                    <img src={product.image} alt={product.name} draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-blue-600 shadow-sm">{product.category}</div>
-                    {product.isHotPromotion && (
-                      <div className="absolute right-4 top-4 rounded-full bg-red-500 px-3 py-1 text-sm font-semibold text-white shadow-lg shadow-red-200">
-                        热促 8折
-                      </div>
-                    )}
-                  </div>
-                }
-              >
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-semibold text-slate-900">{product.name}</h3>
-                      <span className="flex items-center gap-1 text-sm text-amber-500">
-                        <StarFilled />
-                        {product.score}
-                      </span>
-                    </div>
-                    <p className="mt-2 min-h-18 text-sm leading-6 text-slate-500">{product.description}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag) => (
-                      <Tag key={tag} className="rounded-full border-slate-200 px-2 py-1 text-slate-500">
-                        {tag}
-                      </Tag>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                    <div>
-                      <div className="text-xs text-slate-400">折后展示价</div>
-                      <div className="flex items-end gap-2">
-                        <span className="text-2xl font-bold text-red-500">{product.finalPrice}</span>
-                        <span className="mb-0.5 text-sm text-slate-400 line-through">{product.originalPrice}</span>
-                      </div>
-                      {product.isHotPromotion && <div className="mt-1 text-xs font-medium text-red-500">热促商品：折后价再享 8 折</div>}
-                    </div>
-                    <Button icon={<ShoppingCartOutlined />} className="rounded-full" onClick={() => navigate(`/shop/product/${product.id}`)}>
-                      查看详情
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+            {!initialLoading && visibleProducts.map((product, index) => <ProductCard key={product.id} product={product} index={index} onViewDetails={(productId) => navigate(`/shop/product/${productId}`)} />)}
           </div>
 
           <div ref={loadMoreRef} className="py-8 text-slate-500">

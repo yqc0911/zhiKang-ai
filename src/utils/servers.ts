@@ -28,10 +28,7 @@ request.interceptors.response.use(
         if (status === 401) {
             localStorage.removeItem('token')
             localStorage.removeItem('userInfo')
-
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login'
-            }
+            window.dispatchEvent(new Event('auth:expired'))
         }
 
         return Promise.reject(error)

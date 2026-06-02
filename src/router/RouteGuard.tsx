@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { message } from 'antd'
@@ -11,18 +11,27 @@ interface RouteGuardProps {
 
 const RouteGuard = ({ children }: RouteGuardProps) => {
   const location = useLocation()
+  const navigate = useNavigate()
   const token = getToken()
   const [redirectTo, setRedirectTo] = useState<string | null>(null)
-  const [tokenExpired, setTokenExpired] = useState(false)
 
   const guardResult = useMemo(() => beforeEach({ pathname: location.pathname }), [location.pathname])
 
   useEffect(() => {
+    const handleAuthExpired = () => {
+      message.error('token已过期，请重新登录')
+      setRedirectTo('/login')
+      navigate('/login', { replace: true, state: { from: location } })
+    }
+
+    window.addEventListener('auth:expired', handleAuthExpired)
+    return () => window.removeEventListener('auth:expired', handleAuthExpired)
+  }, [location, navigate])
+
+  useEffect(() => {
     if (token && isTokenExpired(token)) {
       clearToken()
-      message.error('token已过期，请重新登录')
-      setTokenExpired(true)
-      setRedirectTo('/login')
+      window.dispatchEvent(new Event('auth:expired'))
       return
     }
 
@@ -33,12 +42,12 @@ const RouteGuard = ({ children }: RouteGuardProps) => {
     }
   }, [guardResult.allow, guardResult.redirect, token])
 
-  if (tokenExpired && redirectTo) {
-    return <Navigate to={redirectTo} replace state={{ from: location }} />
-  }
-
   if (!guardResult.allow && guardResult.redirect) {
     return <Navigate to={guardResult.redirect} replace state={{ from: location }} />
+  }
+
+  if (redirectTo) {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />
   }
 
   return children

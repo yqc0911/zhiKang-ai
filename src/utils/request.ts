@@ -74,6 +74,8 @@ export interface HealthRemindersResponse {
   data: {
     weather: WeatherInfo
     reminders: HealthReminder[]
+    location?: string
+    clientIp?: string
   }
 }
 
@@ -100,6 +102,53 @@ export interface FeaturesResponse {
 
 export const getFeatures = () => {
   return request.get<FeaturesResponse>('/api/features')
+}
+
+export interface ProductItem {
+  id: number
+  name: string
+  category: string
+  description: string
+  originalPrice: string
+  discountedPrice: string
+  finalPrice: string
+  discountLabel: string
+  isHotPromotion: boolean
+  image: string
+  tags: string[]
+  score: string
+}
+
+export interface ProductsResponse {
+  code: number
+  message: string
+  data: ProductItem[]
+}
+
+export interface ProductResponse {
+  code: number
+  message: string
+  data: ProductItem | null
+}
+
+export interface CategoriesResponse {
+  code: number
+  message: string
+  data: string[]
+}
+
+export const getProducts = (category?: string) => {
+  return request.get<ProductsResponse>('/api/shop/products', {
+    params: { category },
+  })
+}
+
+export const getShopCategories = () => {
+  return request.get<CategoriesResponse>('/api/shop/categories')
+}
+
+export const getProductById = (id: number) => {
+  return request.get<ProductResponse>(`/api/shop/products/${id}`)
 }
 
 export default request

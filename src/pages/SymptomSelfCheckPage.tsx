@@ -5,18 +5,33 @@ import { useNavigate } from 'react-router-dom'
 import HomePage from '../component/HomePage'
 import HumanBody3D from '../component/HumanBody3D'
 
+interface SelectedPainPoint {
+    part: string
+    point: {
+        x: number
+        y: number
+        z: number
+    }
+}
+
 const SymptomSelfCheckPage = () => {
     const navigate = useNavigate()
     const [bodyPainParts, setBodyPainParts] = useState<string[]>([])
+    const [painPoints, setPainPoints] = useState<SelectedPainPoint[]>([])
 
     const riskScore = Math.min(100, bodyPainParts.length * 18)
     const riskLabel = riskScore >= 70 ? '高风险' : riskScore >= 35 ? '中风险' : '低风险'
 
-    const handleBodyPartSelect = (part: string) => {
+    const handleBodyPartSelect = (part: string, point: SelectedPainPoint['point']) => {
         setBodyPainParts((prev) => {
             const next = prev.includes(part) ? prev.filter((item) => item !== part) : [...prev, part]
             message.info(next.includes(part) ? `已记录疼痛部位：${part}` : `已取消记录：${part}`)
             return next
+        })
+
+        setPainPoints((prev) => {
+            const filtered = prev.filter((item) => item.part !== part)
+            return [...filtered, { part, point }]
         })
     }
 
@@ -29,6 +44,7 @@ const SymptomSelfCheckPage = () => {
         navigate('/health-ai', {
             state: {
                 painParts: bodyPainParts,
+                painPoints,
                 symptoms: [],
             },
         })

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Button, Card, Divider, InputNumber, Tag } from 'antd'
+import { Button, Card, Divider, Empty, InputNumber, Tag } from 'antd'
 import { ArrowLeftOutlined, DeleteOutlined, SafetyCertificateOutlined, ShoppingCartOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import HomePage from '../component/HomePage'
@@ -51,12 +51,7 @@ const Cart = () => {
             </div>
 
             {items.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center text-slate-500">
-                购物车暂无商品，去商城挑选健康营养产品吧。
-                <div className="mt-4">
-                  <Button type="primary" onClick={() => navigate('/shop')}>去逛商城</Button>
-                </div>
-              </div>
+              <Empty description="购物车暂无商品，去商城挑选健康营养产品吧。" />
             ) : (
               <div className="space-y-4">
                 {items.map((item) => (
@@ -78,7 +73,7 @@ const Cart = () => {
                       </div>
 
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <InputNumber min={1} max={9} value={item.quantity} onChange={(value) => updateQuantity(item.id, value ?? 1)} className="w-full sm:w-28" />
+                        <InputNumber min={1} max={99} value={item.quantity} onChange={(value) => updateQuantity(item.id, value ?? 1)} className="w-full sm:w-28" />
                         <Button danger icon={<DeleteOutlined />} onClick={() => removeItem(item.id)} className="w-full sm:w-auto">
                           删除
                         </Button>
