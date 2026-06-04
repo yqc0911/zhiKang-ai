@@ -2,7 +2,7 @@
 import axios, { AxiosHeaders } from 'axios'
 
 const request = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+    baseURL: 'https://zhi-kang-ai-backend.vercel.app/',
     timeout: 10000,
 })
 
