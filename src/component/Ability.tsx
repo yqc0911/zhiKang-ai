@@ -20,7 +20,6 @@ const iconMap: Record<string, React.ReactNode> = {
 const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
     const navigate = useNavigate()
     const [featureCards, setFeatureCards] = useState<FeatureCardType[]>([])
-    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const fetchFeatures = async () => {
@@ -31,8 +30,6 @@ const Ability = ({ titleContent = '核心功能' }: AbilityProps) => {
                 }
             } catch (error) {
                 console.error('Failed to fetch features:', error)
-            } finally {
-                setLoading(false)
             }
         }
         fetchFeatures()

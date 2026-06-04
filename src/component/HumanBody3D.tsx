@@ -241,7 +241,7 @@ const HumanBody3D = ({ onSelectPart }: HumanBody3DProps) => {
         const useLoadedModel = (root: THREE.Object3D) => {
             clearModel()
             const meshNames: string[] = []
-            root.traverse((child) => {
+            root.traverse((child: THREE.Object3D) => {
                 if ((child as THREE.Mesh).isMesh) {
                     const mesh = child as THREE.Mesh
                     addSelectable(mesh)
@@ -272,7 +272,7 @@ const HumanBody3D = ({ onSelectPart }: HumanBody3DProps) => {
 
             loader.load(
                 url,
-                (gltf) => {
+                (gltf: { scene: THREE.Object3D }) => {
                     if (!disposed) useLoadedModel(gltf.scene)
                 },
                 undefined,

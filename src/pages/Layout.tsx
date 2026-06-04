@@ -4,8 +4,11 @@ import HomePage from '../component/HomePage'
 import Footer from '../component/Footer'
 import Banner from '../component/Banner'
 import { ExportOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 
 const Layout = () => {
+    const navigate = useNavigate()
+
     return (
         <div className="min-h-screen bg-slate-50">
             <HomePage />
@@ -52,7 +55,7 @@ const Layout = () => {
                         <p className='mb-5 text-5xl text-[#00685F]'>健康洞察与资讯</p>
                         <div className="inner flex w-full items-center justify-between">
                             <p>为您挑选最前沿的医疗科技与健康管理建议</p>
-                            <button className='cursor-pointer text-[#00685F]'>查看全部 <ExportOutlined /> </button>
+                            <button className='cursor-pointer text-[#00685F]' onClick={() => navigate('/health-tips')}>查看全部 <ExportOutlined /> </button>
                         </div>
                     </div>
 

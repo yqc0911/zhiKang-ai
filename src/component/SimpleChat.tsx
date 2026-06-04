@@ -57,6 +57,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [pendingBodyPart, setPendingBodyPart] = useState<string | null>(null)
+  const [hasUnsavedConversation, setHasUnsavedConversation] = useState(false)
   const viewportRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -72,7 +73,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
 
   const currentThread = threads.find((thread) => thread.id === currentThreadId)
   const messages = currentThread?.messages ?? []
-  const hasConversation = messages.some((message) => message.role === 'user' || message.role === 'assistant')
+  const hasConversation = hasUnsavedConversation
 
   const buildArchivePayload = useCallback(() => {
     if (!currentThread || !hasConversation) return null
@@ -204,6 +205,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
     }
 
     const nextMessages = [...messages, userMessage]
+    setHasUnsavedConversation(true)
     setThreads((prev) => prev.map((thread) => (thread.id === threadId ? { ...thread, messages: [...thread.messages, userMessage], updatedAt: Date.now() } : thread)))
     if (messages.length === 0) updateThreadTitle(threadId, input.trim())
 
