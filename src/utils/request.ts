@@ -104,6 +104,97 @@ export const getFeatures = () => {
   return request.get<FeaturesResponse>('/api/features')
 }
 
+export interface ConsultationSummary {
+  id: string
+  title: string
+  summary: string
+  messageCount: number
+  archivedAt: string
+}
+
+export interface UserProfile {
+  userId?: number
+  username?: string
+  name: string
+  gender: string
+  birthday: string
+  height: string
+  weight: string
+  avatarUrl: string
+  consultationSummaries?: ConsultationSummary[]
+}
+
+export interface ProfileResponse {
+  code: number
+  message: string
+  data: UserProfile
+}
+
+export const getUserProfile = () => {
+  return request.get<ProfileResponse>('/api/profile')
+}
+
+export const updateUserProfile = (data: UserProfile) => {
+  return request.put<ProfileResponse>('/api/profile', data)
+}
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  image?: string
+  bodyPart?: string
+  timestamp: number
+}
+
+export interface ChatThread {
+  id: string
+  title: string
+  createdAt: number
+  updatedAt: number
+  messages: ChatMessage[]
+}
+
+export interface ChatHistoryResponse {
+  code: number
+  message: string
+  data: ChatThread[]
+}
+
+export const getChatHistory = () => {
+  return request.get<ChatHistoryResponse>('/api/chat/history')
+}
+
+export interface ConsultationArchiveResponse {
+  code: number
+  message: string
+  data: ConsultationSummary[]
+}
+
+export const getConsultationSummaries = () => {
+  return request.get<ConsultationArchiveResponse>('/api/profile/consultations')
+}
+
+export const saveCurrentConsultationToProfile = (payload: ConsultationSummary) => {
+  return request.post('/api/profile/consultations', payload)
+}
+
+export const deleteConsultationSummary = (id: string) => {
+  return request.delete(`/api/profile/consultations/${id}`)
+}
+
+export interface LoginStatsResponse {
+  code: number
+  message: string
+  data: {
+    activeDays: number
+  }
+}
+
+export const getLoginStats = () => {
+  return request.get<LoginStatsResponse>('/api/login-stats')
+}
+
 export interface ProductItem {
   id: number
   name: string

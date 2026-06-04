@@ -1,25 +1,39 @@
-import { Avatar, Badge } from 'antd'
+import { Avatar, Badge, Modal } from 'antd'
 import { LogoutOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useCartStore } from '../store/cartStore'
+import { getToken, getUserProfile } from '../utils/request'
+import { getConsultationGuardState } from '../utils/consultationGuard'
 
 const HomePage = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [activeAction, setActiveAction] = useState<'login' | 'signup' | null>(null)
-  const [avatarUrl, setAvatarUrl] = useState<string>(() => {
-    return localStorage.getItem('avatarUrl') || ''
-  })
+  const [avatarUrl, setAvatarUrl] = useState('')
 
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'avatarUrl') {
-        setAvatarUrl(e.newValue || '')
+    const loadAvatar = async () => {
+      if (!getToken()) {
+        setAvatarUrl('')
+        return
+      }
+
+      try {
+        const res = await getUserProfile()
+        setAvatarUrl(res.data?.data?.avatarUrl || '')
+      } catch (error) {
+        console.error('获取导航栏头像失败:', error)
       }
     }
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+
+    const handleProfileChange = () => {
+      void loadAvatar()
+    }
+
+    void loadAvatar()
+    window.addEventListener('profile:updated', handleProfileChange)
+    return () => window.removeEventListener('profile:updated', handleProfileChange)
   }, [])
 
   const isLoggedIn = Boolean(localStorage.getItem('token'))
@@ -50,13 +64,35 @@ const HomePage = () => {
           : 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
     }`
 
+  const guardedNavigate = (path: string) => {
+    if (location.pathname === '/health-ai' && path !== '/health-ai') {
+      const guard = getConsultationGuardState()
+      if (guard?.hasConversation()) {
+        Modal.confirm({
+          title: '是否保存本次 AI 问诊？',
+          content: '检测到你已经和 AI 发生了对话，是否将本次对话摘要添加到个人档案中？',
+          okText: '保存并离开',
+          cancelText: '不保存离开',
+          centered: true,
+          onOk: async () => {
+            await guard.saveCurrentConsultation()
+            navigate(path)
+          },
+          onCancel: () => navigate(path),
+        })
+        return
+      }
+    }
+    navigate(path)
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
       <div className="flex w-full flex-col gap-3 px-4 py-3 lg:min-h-18 lg:flex-row lg:items-center lg:justify-between lg:px-12 xl:px-32">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-8">
           <button
             className="cursor-pointer self-start text-2xl font-semibold text-[#4A90FF] transition hover:text-[#3478e0]"
-            onClick={() => navigate('/')}
+            onClick={() => guardedNavigate('/')}
           >
             ZhiKangAI
           </button>
@@ -73,7 +109,7 @@ const HomePage = () => {
                           ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
                           : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
                       }`}
-                      onClick={() => navigate(item.path)}
+                      onClick={() => guardedNavigate(item.path)}
                     >
                       {item.label}
                     </button>
@@ -97,7 +133,7 @@ const HomePage = () => {
               >
                 <button
                   className="group flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br from-white to-slate-50 text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-600 hover:shadow-[0_14px_40px_rgba(74,144,255,0.18)] active:translate-y-0"
-                  onClick={() => navigate('/cart')}
+                  onClick={() => guardedNavigate('/cart')}
                   aria-label="购物车"
                 >
                   <ShoppingCartOutlined className="text-lg transition-transform duration-200 group-hover:scale-110" />
@@ -105,10 +141,10 @@ const HomePage = () => {
               </Badge>
               <button
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
-                onClick={() => navigate('/profile')}
+                onClick={() => guardedNavigate('/profile')}
                 aria-label="个人中心"
               >
-                <Avatar size={30} src={avatarUrl} icon={<UserOutlined />} />
+                <Avatar size={30} src={avatarUrl || null} icon={<UserOutlined />} />
               </button>
               <button
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:text-blue-600"

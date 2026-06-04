@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Bot, Image as ImageIcon, MessageCircle, MessageSquare, Plus, Send, Sparkles, Trash2, User } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { message } from 'antd'
+import { getChatHistory, getToken, saveCurrentConsultationToProfile } from '../utils/request'
+import { setConsultationGuardState } from '../utils/consultationGuard'
 
 const IMAGE_MAX_SIZE = 5 * 1024 * 1024
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-const STORAGE_KEY = 'chat_threads'
 
 interface Message {
   id: string
@@ -30,17 +32,14 @@ interface SimpleChatProps {
   initialPainPoints?: Array<{ part: string; point: { x: number; y: number; z: number } }>
 }
 
-const loadThreads = (): Thread[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? (JSON.parse(stored) as Thread[]) : []
-  } catch {
-    return []
-  }
-}
-
-const saveThreads = (threads: Thread[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(threads))
+const mapRemoteThreads = (threads: Array<{ id: string; title: string; createdAt: number; updatedAt: number; messages: Array<{ id: string; role: 'user' | 'assistant' | 'system'; content: string; image?: string; bodyPart?: string; timestamp: number }> }>): Thread[] => {
+  return threads.map((thread) => ({
+    id: thread.id,
+    title: thread.title,
+    createdAt: thread.createdAt,
+    updatedAt: thread.updatedAt,
+    messages: thread.messages.filter((message) => message.role !== 'system') as Message[],
+  }))
 }
 
 const normalizeMarkdown = (content: string) =>
@@ -54,26 +53,89 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [pendingBodyPart, setPendingBodyPart] = useState<string | null>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const extraContext = [
-    initialPainParts.length ? `疼痛部位：${initialPainParts.join('、')}` : '',
-    initialPainPoints.length
-      ? `疼痛位置坐标：${initialPainPoints.map((item) => `${item.part}(${item.point.x},${item.point.y},${item.point.z})`).join('；')}`
-      : '',
-    initialSymptoms.length ? `自查症状：${initialSymptoms.join('、')}` : '',
-  ]
-    .filter(Boolean)
-    .join('；')
+  const extraContext = useMemo(() => {
+    return [
+      initialPainParts.length ? `疼痛部位：${initialPainParts.join('、')}` : '',
+      initialPainPoints.length ? `疼痛位置坐标：${initialPainPoints.map((item) => `${item.part}(${item.point.x},${item.point.y},${item.point.z})`).join('；')}` : '',
+      initialSymptoms.length ? `自查症状：${initialSymptoms.join('、')}` : '',
+    ]
+      .filter(Boolean)
+      .join('；')
+  }, [initialPainParts, initialPainPoints, initialSymptoms])
+
+  const currentThread = threads.find((thread) => thread.id === currentThreadId)
+  const messages = currentThread?.messages ?? []
+  const hasConversation = messages.some((message) => message.role === 'user' || message.role === 'assistant')
+
+  const buildArchivePayload = useCallback(() => {
+    if (!currentThread || !hasConversation) return null
+    const contentMessages = currentThread.messages.filter((item) => item.content.trim())
+    const firstUserMessage = contentMessages.find((item) => item.role === 'user')?.content || currentThread.title
+    const lastAssistantMessage = [...contentMessages].reverse().find((item) => item.role === 'assistant')?.content || ''
+    const summarySource = lastAssistantMessage || firstUserMessage
+    return {
+      id: currentThread.id,
+      title: currentThread.title === '新对话' ? firstUserMessage.slice(0, 30) || 'AI 问诊记录' : currentThread.title,
+      summary: summarySource.slice(0, 180) + (summarySource.length > 180 ? '...' : ''),
+      messageCount: currentThread.messages.length,
+      archivedAt: new Date().toISOString(),
+    }
+  }, [currentThread, hasConversation])
+
+  const saveCurrentConsultation = useCallback(async () => {
+    const payload = buildArchivePayload()
+    if (!payload) return false
+    try {
+      await saveCurrentConsultationToProfile(payload)
+      message.success('本次问诊已添加到个人档案')
+      return true
+    } catch (error) {
+      console.error('保存问诊到个人档案失败:', error)
+      message.error('保存问诊失败，请检查后端服务')
+      return false
+    }
+  }, [buildArchivePayload])
 
   useEffect(() => {
-    const loaded = loadThreads()
-    setThreads(loaded)
-    if (loaded.length > 0) setCurrentThreadId(loaded[0].id)
+    setConsultationGuardState({
+      hasConversation: () => hasConversation,
+      buildArchivePayload,
+      saveCurrentConsultation,
+    })
+    return () => setConsultationGuardState(null)
+  }, [buildArchivePayload, hasConversation, saveCurrentConsultation])
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!getToken()) {
+        setIsHistoryLoading(false)
+        return
+      }
+
+      try {
+        const res = await getChatHistory()
+        const nextThreads = res.data?.data || []
+        setThreads(mapRemoteThreads(nextThreads))
+        setCurrentThreadId(nextThreads[0]?.id ?? null)
+      } catch (error: any) {
+        if (error?.response?.status !== 404) {
+          console.error('获取问诊历史失败:', error)
+        }
+        setThreads([])
+        setCurrentThreadId(null)
+      } finally {
+        setIsHistoryLoading(false)
+      }
+    }
+
+    void loadHistory()
   }, [])
 
   useEffect(() => {
@@ -86,34 +148,23 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
     if (viewportRef.current) viewportRef.current.scrollTop = viewportRef.current.scrollHeight
   }, [threads, currentThreadId])
 
-  const currentThread = threads.find((thread) => thread.id === currentThreadId)
-  const messages = currentThread?.messages ?? []
-
   const createNewThread = useCallback(() => {
     const newThread: Thread = { id: `thread-${Date.now()}`, title: '新对话', messages: [], createdAt: Date.now(), updatedAt: Date.now() }
-    const next = [newThread, ...threads]
-    setThreads(next)
-    saveThreads(next)
+    setThreads((prev) => [newThread, ...prev])
     setCurrentThreadId(newThread.id)
-  }, [threads])
+  }, [])
 
-  const deleteThread = useCallback(
-    (threadId: string) => {
-      const next = threads.filter((thread) => thread.id !== threadId)
-      setThreads(next)
-      saveThreads(next)
+  const deleteThread = useCallback((threadId: string) => {
+    setThreads((prev) => {
+      const next = prev.filter((thread) => thread.id !== threadId)
       if (currentThreadId === threadId) setCurrentThreadId(next[0]?.id ?? null)
-    },
-    [threads, currentThreadId],
-  )
+      return next
+    })
+  }, [currentThreadId])
 
   const updateThreadTitle = useCallback((threadId: string, firstMessage: string) => {
     const title = firstMessage.slice(0, 30) + (firstMessage.length > 30 ? '...' : '')
-    setThreads((prev) => {
-      const next = prev.map((thread) => (thread.id === threadId ? { ...thread, title } : thread))
-      saveThreads(next)
-      return next
-    })
+    setThreads((prev) => prev.map((thread) => (thread.id === threadId ? { ...thread, title } : thread)))
   }, [])
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,15 +189,13 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
     let threadId = currentThreadId
     if (!threadId) {
       const newThread: Thread = { id: `thread-${Date.now()}`, title: '新对话', messages: [], createdAt: Date.now(), updatedAt: Date.now() }
-      const next = [newThread, ...threads]
-      setThreads(next)
-      saveThreads(next)
+      setThreads((prev) => [newThread, ...prev])
       threadId = newThread.id
       setCurrentThreadId(threadId)
     }
 
     const userMessage: Message = {
-      id: `msg-${Date.now()}`,
+      id: `msg-${Date.now()}-u`,
       role: 'user',
       content: input.trim(),
       image: selectedImage || undefined,
@@ -154,14 +203,10 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
       timestamp: Date.now(),
     }
 
-    const currentMessages = threads.find((thread) => thread.id === threadId)?.messages ?? []
-    setThreads((prev) => {
-      const next = prev.map((thread) => (thread.id === threadId ? { ...thread, messages: [...thread.messages, userMessage], updatedAt: Date.now() } : thread))
-      saveThreads(next)
-      return next
-    })
+    const nextMessages = [...messages, userMessage]
+    setThreads((prev) => prev.map((thread) => (thread.id === threadId ? { ...thread, messages: [...thread.messages, userMessage], updatedAt: Date.now() } : thread)))
+    if (messages.length === 0) updateThreadTitle(threadId, input.trim())
 
-    if (currentMessages.length === 0) updateThreadTitle(threadId, input.trim())
     setInput('')
     setPendingBodyPart(null)
     removeSelectedImage()
@@ -170,9 +215,18 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
     try {
       const response = await fetch('http://localhost:3000/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken() || ''}`,
+        },
         body: JSON.stringify({
-          messages: [...currentMessages, userMessage].map((m) => ({ role: m.role, content: m.content || (m.image ? '[图片]' : ''), image: m.image })),
+          threadId,
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.content || (m.image ? '[图片]' : ''),
+            image: m.image,
+            bodyPart: m.bodyPart,
+          })),
         }),
       })
 
@@ -182,21 +236,12 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
 
       const decoder = new TextDecoder('utf-8')
       let assistantContent = ''
-      const assistantMessageId = `msg-${Date.now()}`
-      const assistantMessage: Message = {
-        id: assistantMessageId,
-        role: 'assistant',
-        content: '',
-        timestamp: Date.now(),
-      }
-
-      setThreads((prev) => {
-        const next = prev.map((thread) =>
-          thread.id === threadId ? { ...thread, messages: [...thread.messages, assistantMessage], updatedAt: Date.now() } : thread,
-        )
-        saveThreads(next)
-        return next
-      })
+      const assistantMessageId = `msg-${Date.now()}-a`
+      setThreads((prev) => prev.map((thread) => thread.id === threadId ? {
+        ...thread,
+        messages: [...thread.messages, { id: assistantMessageId, role: 'assistant', content: '', timestamp: Date.now() }],
+        updatedAt: Date.now(),
+      } : thread))
 
       while (true) {
         const { done, value } = await reader.read()
@@ -211,29 +256,21 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
             const json = JSON.parse(data)
             if (json.type === 'text-delta' && json.delta) {
               assistantContent += json.delta
-              setThreads((prev) => {
-                const next = prev.map((thread) =>
-                  thread.id === threadId
-                    ? { ...thread, messages: thread.messages.map((msg) => (msg.id === assistantMessageId ? { ...msg, content: assistantContent } : msg)), updatedAt: Date.now() }
-                    : thread,
-                )
-                saveThreads(next)
-                return next
-              })
+              setThreads((prev) => prev.map((thread) => thread.id === threadId ? {
+                ...thread,
+                messages: thread.messages.map((msg) => msg.id === assistantMessageId ? { ...msg, content: assistantContent } : msg),
+                updatedAt: Date.now(),
+              } : thread))
             }
           } catch {
-            // ignore parse issues for streamed chunks
+            // ignore stream chunk parse errors
           }
         }
       }
     } catch (error) {
       console.error('Error:', error)
-      const errorMessage: Message = { id: `msg-${Date.now()}`, role: 'assistant', content: '抱歉，发生了错误，请稍后重试。', timestamp: Date.now() }
-      setThreads((prev) => {
-        const next = prev.map((thread) => (thread.id === threadId ? { ...thread, messages: [...thread.messages, errorMessage], updatedAt: Date.now() } : thread))
-        saveThreads(next)
-        return next
-      })
+      const errorMessage: Message = { id: `msg-${Date.now()}-e`, role: 'assistant', content: '抱歉，发生了错误，请稍后重试。', timestamp: Date.now() }
+      setThreads((prev) => prev.map((thread) => thread.id === threadId ? { ...thread, messages: [...thread.messages, errorMessage], updatedAt: Date.now() } : thread))
     } finally {
       setIsLoading(false)
     }
@@ -272,7 +309,9 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
           </div>
           <div className="flex-1 overflow-y-auto px-3 pb-3">
             <div className="mb-2 px-2 text-xs font-medium uppercase tracking-wider text-[#89F5E7]/60">历史记录</div>
-            {threads.length === 0 ? (
+            {isHistoryLoading ? (
+              <div className="px-2 text-sm text-[#89F5E7]/60">正在加载历史记录...</div>
+            ) : threads.length === 0 ? (
               <div className="px-2 text-sm text-[#89F5E7]/60">暂无对话记录</div>
             ) : (
               threads.map((thread) => (
@@ -312,11 +351,11 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
           <div ref={viewportRef} className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50/50 p-6">
             {messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-6">
-                <div className="w-24 h-24 rounded-3xl bg-[#00685F] flex items-center justify-center shadow-xl shadow-[#00685F]/30">
-                  <MessageCircle className="w-12 h-12 text-white" />
+                <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-[#00685F] shadow-xl shadow-[#00685F]/30">
+                  <MessageCircle className="h-12 w-12 text-white" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold text-[#213145] mb-2">AI 健康助手</h2>
+                  <h2 className="mb-2 text-2xl font-bold text-[#213145]">AI 健康助手</h2>
                   <p className="text-lg text-slate-500">您好，点击人体模型记录疼痛部位后，我可以基于位置给出分析建议。</p>
                 </div>
               </div>
