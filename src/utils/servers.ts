@@ -1,6 +1,8 @@
 // 二次封装 axios
 import axios, { AxiosHeaders } from 'axios'
 
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || 'dev'
+
 const request = axios.create({
     baseURL: 'https://zhi-kang-ai-backend.vercel.app/',
     timeout: 10000,
@@ -15,6 +17,8 @@ request.interceptors.request.use(
             config.headers.set('Authorization', `Bearer ${token}`)
         }
 
+        config.headers = config.headers ?? new AxiosHeaders()
+        config.headers.set('X-App-Version', APP_VERSION)
         return config
     },
     (error) => Promise.reject(error),
