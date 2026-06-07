@@ -61,7 +61,7 @@ const router = createBrowserRouter([
         element: withGuard(<ContactUsPage />),
     },
     {
-        path: '/login',
+        path: '/api/login',
         element: withGuard(<LoginPage />),
     },
     {

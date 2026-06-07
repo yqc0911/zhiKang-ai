@@ -142,7 +142,7 @@ const RegisterPage = () => {
 
                                 <div className="text-center text-sm text-slate-500">
                                     已有账号？
-                                    <button type="button" className="ml-1 text-blue-600 hover:text-blue-500" onClick={() => navigate('/login')}>
+                                    <button type="button" className="ml-1 text-blue-600 hover:text-blue-500" onClick={() => navigate('/api/login')}>
                                         去登录
                                     </button>
                                 </div>

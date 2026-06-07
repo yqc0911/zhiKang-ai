@@ -5,7 +5,7 @@ export const routeWhiteList = [
   '/help-center',
   '/privacy-policy',
   '/contact-us',
-  '/login',
+  '/api/login',
   '/register',
   '/shop',
   '/cart',
@@ -44,7 +44,7 @@ export const beforeEach = ({ pathname }: BeforeEachOptions): BeforeEachResult =>
   }
 
   if (!isLoggedIn()) {
-    return { allow: false, redirect: '/login' }
+    return { allow: false, redirect: '/api/login' }
   }
 
   return { allow: true }

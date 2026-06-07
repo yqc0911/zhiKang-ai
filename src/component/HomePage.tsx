@@ -151,8 +151,8 @@ const HomePage = () => {
                 onClick={() => {
                   localStorage.removeItem('token')
                   localStorage.removeItem('userInfo')
-                  window.history.replaceState(null, '', '/login')
-                  window.location.replace('/login')
+                  window.history.replaceState(null, '', '/api/login')
+                  window.location.replace('/api/login')
                 }}
                 aria-label="退出登录"
               >
@@ -165,7 +165,7 @@ const HomePage = () => {
                 className={actionButtonClass(activeAction === 'login', 'login')}
                 onClick={() => {
                   setActiveAction('login')
-                  navigate('/login')
+                  navigate('/api/login')
                 }}
               >
                 Login

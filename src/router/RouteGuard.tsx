@@ -20,8 +20,8 @@ const RouteGuard = ({ children }: RouteGuardProps) => {
   useEffect(() => {
     const handleAuthExpired = () => {
       message.error('token已过期，请重新登录')
-      setRedirectTo('/login')
-      navigate('/login', { replace: true, state: { from: location } })
+      setRedirectTo('/api/login')
+      navigate('/api/login', { replace: true, state: { from: location } })
     }
 
     window.addEventListener('auth:expired', handleAuthExpired)
