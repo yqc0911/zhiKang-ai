@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Bot, Image as ImageIcon, MessageCircle, MessageSquare, Plus, Send, Sparkles, Trash2, User } from 'lucide-react'
+import { Bot, Image as ImageIcon, Loader2, MessageCircle, MessageSquare, Plus, Send, Sparkles, Trash2, User } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { message } from 'antd'
@@ -8,6 +8,7 @@ import { setConsultationGuardState } from '../utils/consultationGuard'
 
 const IMAGE_MAX_SIZE = 5 * 1024 * 1024
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+const CHAT_STORAGE_KEY = 'zhikang-ai-chat-state'
 
 interface Message {
   id: string
@@ -60,6 +61,19 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
   const [hasUnsavedConversation, setHasUnsavedConversation] = useState(false)
   const viewportRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    try {
+      const cached = window.localStorage.getItem(CHAT_STORAGE_KEY)
+      if (!cached) return
+      const parsed = JSON.parse(cached) as { threads?: Thread[]; currentThreadId?: string | null; hasUnsavedConversation?: boolean }
+      if (Array.isArray(parsed.threads)) setThreads(parsed.threads)
+      if (typeof parsed.currentThreadId !== 'undefined') setCurrentThreadId(parsed.currentThreadId)
+      if (typeof parsed.hasUnsavedConversation === 'boolean') setHasUnsavedConversation(parsed.hasUnsavedConversation)
+    } catch (error) {
+      console.warn('恢复聊天缓存失败:', error)
+    }
+  }, [])
 
   const extraContext = useMemo(() => {
     return [
@@ -144,6 +158,13 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
       setInput((prev) => (prev ? prev : `我刚才在自查中记录了：${extraContext}，请结合这些信息帮我分析。`))
     }
   }, [extraContext])
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      CHAT_STORAGE_KEY,
+      JSON.stringify({ threads, currentThreadId, hasUnsavedConversation }),
+    )
+  }, [threads, currentThreadId, hasUnsavedConversation])
 
   useEffect(() => {
     if (viewportRef.current) viewportRef.current.scrollTop = viewportRef.current.scrollHeight
@@ -244,6 +265,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
         messages: [...thread.messages, { id: assistantMessageId, role: 'assistant', content: '', timestamp: Date.now() }],
         updatedAt: Date.now(),
       } : thread))
+      setHasUnsavedConversation(true)
 
       while (true) {
         const { done, value } = await reader.read()
@@ -284,6 +306,18 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
       void handleSend()
     }
   }
+
+  const LoadingBubble = () => (
+    <div className="mb-4 flex items-end gap-3 justify-start">
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#00685F]">
+        <Bot className="h-4 w-4 text-white" />
+      </div>
+      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm">
+        <Loader2 className="h-4 w-4 animate-spin text-[#00685F]" />
+        <span>AI 正在思考中…</span>
+      </div>
+    </div>
+  )
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp)
@@ -362,16 +396,19 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
                 </div>
               </div>
             ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className={`mb-4 flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.role === 'assistant' && <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#00685F]"><Bot className="h-4 w-4 text-white" /></div>}
-                  <div className={`max-w-[70%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
-                    {msg.bodyPart && <div className="mb-2 text-xs opacity-80">疼痛部位：{msg.bodyPart}</div>}
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizeMarkdown(msg.content)}</ReactMarkdown>
+              <>
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`mb-4 flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {msg.role === 'assistant' && <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#00685F]"><Bot className="h-4 w-4 text-white" /></div>}
+                    <div className={`max-w-[70%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
+                      {msg.bodyPart && <div className="mb-2 text-xs opacity-80">疼痛部位：{msg.bodyPart}</div>}
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizeMarkdown(msg.content)}</ReactMarkdown>
+                    </div>
+                    {msg.role === 'user' && <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-200"><User className="h-4 w-4 text-slate-600" /></div>}
                   </div>
-                  {msg.role === 'user' && <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-200"><User className="h-4 w-4 text-slate-600" /></div>}
-                </div>
-              ))
+                ))}
+                {isLoading && <LoadingBubble />}
+              </>
             )}
           </div>
 
