@@ -54,9 +54,9 @@ const LoginPage = () => {
     }
 
     return (
-        <div className="flex h-[100svh] overflow-hidden bg-gradient-to-b from-slate-50 via-white to-cyan-50">
-            <div className="mx-auto flex h-full w-full max-w-6xl items-stretch px-3 py-3 sm:px-4 sm:py-4 md:py-6">
-                <div className="grid h-full min-h-0 w-full grid-cols-1 overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur md:grid-cols-[1.05fr_0.95fr]">
+        <div className="min-h-screen overflow-y-auto bg-gradient-to-b from-slate-50 via-white to-cyan-50">
+            <div className="mx-auto flex min-h-screen w-full max-w-6xl items-stretch px-3 py-6 sm:px-4 sm:py-8 md:py-10">
+                <div className="grid min-h-[calc(100vh-1.5rem)] w-full grid-cols-1 overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur md:grid-cols-[1.05fr_0.95fr]"> 
                     <div className="hidden min-h-0 bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-400 p-6 text-white md:flex md:flex-col md:justify-between lg:p-8">
                         <div>
                             <div className="text-xs uppercase tracking-[0.3em] text-white/75 lg:text-sm lg:tracking-[0.35em]">HealthAI</div>

@@ -139,7 +139,7 @@ const Pay = () => {
       <HomePage />
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <button className="mb-4 flex items-center gap-2 text-slate-500 transition hover:text-blue-600" onClick={() => navigate('/cart')}>
+        <button className="mb-4 flex items-center gap-2 text-sm text-slate-500 transition hover:text-blue-600 sm:text-base" onClick={() => navigate('/cart')}>
           <ArrowLeftOutlined />
           返回购物车
         </button>
