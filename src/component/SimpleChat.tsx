@@ -330,10 +330,10 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] w-full items-stretch justify-center overflow-hidden bg-slate-50 p-3 sm:p-4 md:p-6 lg:p-8">
-      <div className="flex h-full min-h-[calc(100vh-6rem)] w-full max-w-7xl overflow-hidden rounded-2xl shadow-2xl">
-        <div className={`${sidebarOpen ? 'w-64 sm:w-72' : 'w-0'} flex flex-col bg-[#213145] transition-all duration-300`}>
-          <div className="p-4 sm:p-5">
+    <div className="flex h-full w-full items-center justify-center overflow-hidden bg-slate-50 p-4 md:p-6 lg:p-8">
+      <div className="flex h-full w-full max-w-7xl overflow-hidden rounded-2xl shadow-2xl">
+        <div className={`${sidebarOpen ? 'w-64' : 'w-0'} flex flex-col bg-[#213145] transition-all duration-300`}>
+          <div className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-[#89F5E7]" />
               <h2 className="text-xl font-bold text-white">AI 健康助手</h2>

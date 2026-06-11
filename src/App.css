@@ -188,10 +188,31 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
   html {
     @apply font-sans;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -70,16 +70,18 @@ const HealthTipsPage = () => {
     }, [activeCategory, keyword])
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-            <HomePage />
+        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
+            <div className="flex-none">
+                <HomePage />
+            </div>
 
-            <div className="px-4 py-4 sm:px-6 lg:px-8">
-                <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-[1.4fr_0.6fr]">
-                    <Card className="overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-                        <div className="flex flex-col gap-5">
+            <div className="flex-1 overflow-hidden px-4 py-4">
+                <div className="mx-auto grid h-full max-w-6xl grid-cols-1 gap-4 lg:grid-cols-[1.4fr_0.6fr]">
+                    <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+                        <div className="h-full flex flex-col gap-5 overflow-hidden">
                             <div>
-                                <div className="text-2xl font-bold text-slate-800 sm:text-3xl">健康科普资讯</div>
-                                <div className="mt-2 text-sm text-slate-500 sm:text-base">精选健康知识，帮助你形成更好的生活习惯</div>
+                                <div className="text-3xl font-bold text-slate-800">健康科普资讯</div>
+                                <div className="text-slate-500 mt-2">精选健康知识，帮助你形成更好的生活习惯</div>
                             </div>
 
                             <Input
@@ -95,7 +97,7 @@ const HealthTipsPage = () => {
                                     <Tag
                                         key={category}
                                         color={activeCategory === category ? 'blue' : 'default'}
-                                        className="cursor-pointer rounded-full px-3 py-1 text-sm leading-6 sm:text-base"
+                                        className="px-3 py-1 cursor-pointer text-base leading-6 rounded-full"
                                         onClick={() => setActiveCategory(category)}
                                     >
                                         {category}
@@ -103,35 +105,35 @@ const HealthTipsPage = () => {
                                 ))}
                             </div>
 
-                            <div className="overflow-hidden">
+                            <div className="flex-1 overflow-hidden">
                                 <Table
                                     dataSource={filteredArticles}
                                     rowKey="id"
-                                    pagination={{ pageSize: 4, size: 'small' }}
-                                    scroll={{ x: 900 }}
+                                    pagination={{ pageSize: 4 }}
+                                    scroll={{ y: 'calc(100vh - 460px)' }}
                                     columns={[
-                                        { title: '标题', dataIndex: 'title', key: 'title', className: 'font-semibold text-slate-800', width: 180 },
-                                        { title: '分类', dataIndex: 'category', key: 'category', width: 120, render: (category: string) => <Tag color="blue">{category}</Tag> },
-                                        { title: '简介', dataIndex: 'summary', key: 'summary', className: 'text-slate-600', ellipsis: true, width: 320 },
-                                        { title: '标签', dataIndex: 'tags', key: 'tags', width: 220, render: (tags: string[]) => <div className="flex flex-wrap gap-1">{tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}</div> },
-                                        { title: '阅读时间', dataIndex: 'time', key: 'time', className: 'text-slate-500', width: 120 },
+                                        { title: '标题', dataIndex: 'title', key: 'title', className: 'font-semibold text-slate-800' },
+                                        { title: '分类', dataIndex: 'category', key: 'category', render: (category: string) => <Tag color="blue">{category}</Tag> },
+                                        { title: '简介', dataIndex: 'summary', key: 'summary', className: 'text-slate-600', ellipsis: true },
+                                        { title: '标签', dataIndex: 'tags', key: 'tags', render: (tags: string[]) => <div className="flex flex-wrap gap-1">{tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}</div> },
+                                        { title: '阅读时间', dataIndex: 'time', key: 'time', className: 'text-slate-500' },
                                     ]}
                                 />
                             </div>
                         </div>
                     </Card>
 
-                    <div className="flex flex-col gap-4">
-                        <Card className="rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                    <div className="h-full flex flex-col gap-4 overflow-hidden">
+                        <Card className="flex-none rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <div className="text-base font-semibold text-slate-800">当前地点</div>
-                            <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-slate-600">
+                            <div className="mt-2 rounded-lg bg-blue-50 border border-blue-100 p-3 text-sm text-slate-600">
                                 {loading ? <Skeleton active paragraph={{ rows: 1 }} title={false} /> : <div>定位城市：{location}</div>}
                             </div>
                         </Card>
 
-                        <Card className="rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                        <Card className="flex-none rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <div className="text-base font-semibold text-slate-800">今日天气</div>
-                            <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-slate-600">
+                            <div className="mt-2 rounded-lg bg-blue-50 border border-blue-100 p-3 text-sm text-slate-600">
                                 {loading ? (
                                     <Skeleton active paragraph={{ rows: 3 }} title={false} />
                                 ) : weather ? (
@@ -147,12 +149,12 @@ const HealthTipsPage = () => {
                             </div>
                         </Card>
 
-                        <Card className="rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                        <Card className="flex-1 overflow-hidden rounded-xl border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                             <div className="text-base font-semibold text-slate-800">健康提醒</div>
-                            <div className="mt-2 space-y-2">
+                            <div className="mt-2 space-y-2 overflow-auto pr-1">
                                 {healthReminders.length > 0 ? (
                                     healthReminders.map((reminder, index) => (
-                                        <div key={index} className="flex items-start gap-2 rounded-lg border border-slate-100 p-3 text-sm text-slate-600">
+                                        <div key={index} className="rounded-lg border border-slate-100 p-2.5 text-sm text-slate-600 flex items-start gap-2">
                                             <span className="text-base">{iconMap[reminder.icon] || '📌'}</span>
                                             <span>{reminder.content}</span>
                                         </div>

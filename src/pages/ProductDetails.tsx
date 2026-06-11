@@ -57,9 +57,9 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-white">
       <HomePage />
 
-      <main className="w-full overflow-x-hidden bg-white px-4 py-4 sm:px-6 lg:px-8">
+      <main className="w-full overflow-x-hidden bg-white px-4 py-4 sm:px-6">
         <div className="mx-auto max-w-7xl">
-          <button className="mb-4 flex items-center gap-2 text-sm transition hover:text-blue-600 sm:text-base" onClick={() => navigate('/shop')}>
+          <button className="mb-4 flex items-center gap-2 transition hover:text-blue-600" onClick={() => navigate('/shop')}>
             <ArrowLeftOutlined />
             返回健康商城
           </button>
@@ -67,7 +67,7 @@ const ProductDetails = () => {
           <Card className="rounded-3xl border-white bg-white shadow-none">
             {loading ? (
               <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] xl:grid-cols-[minmax(0,450px)_minmax(340px,1fr)]">
-                <Skeleton.Image active className="!h-[320px] !w-full rounded-3xl sm:!h-[380px] lg:!h-[450px]" />
+                <Skeleton.Image active className="!h-[450px] !w-full rounded-3xl" />
                 <div className="space-y-4">
                   <Skeleton active paragraph={{ rows: 6 }} />
                 </div>

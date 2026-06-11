@@ -133,14 +133,14 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="min-h-screen overflow-y-auto bg-gradient-to-b from-slate-50 to-white flex flex-col">
+        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
             <div className="flex-none">
                 <HomePage />
             </div>
 
             <Spin spinning={loading} className="flex-1 overflow-hidden">
-            <div className="flex-1 overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
-                <div className="mx-auto h-full w-full max-w-7xl">
+            <div className="flex-1 overflow-hidden px-4 py-4">
+                <div className="mx-auto  h-full max-w-[80vw]  lg:grid-cols-[1.05fr_0.95fr]">
                     <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div className="flex items-center gap-4">

@@ -8,9 +8,11 @@ const HealthAIPage = () => {
   const symptoms = (location.state as { symptoms?: string[] } | null)?.symptoms || []
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <HomePage />
-      <div className="min-h-[calc(100vh-4rem)]">
+    <div className="flex h-screen flex-col">
+      <div className="flex-shrink-0">
+        <HomePage />
+      </div>
+      <div className="flex-1 min-h-0">
         <SimpleChat initialPainParts={painParts} initialSymptoms={symptoms} />
       </div>
     </div>

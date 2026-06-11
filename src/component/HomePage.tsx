@@ -88,7 +88,7 @@ const HomePage = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
-      <div className="flex w-full flex-col gap-3 px-4 py-3 sm:px-5 lg:min-h-18 lg:flex-row lg:items-center lg:justify-between lg:px-12 xl:px-32">
+      <div className="flex w-full flex-col gap-3 px-4 py-3 lg:min-h-18 lg:flex-row lg:items-center lg:justify-between lg:px-12 xl:px-32">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-8">
           <button
             className="cursor-pointer self-start text-2xl font-semibold text-[#4A90FF] transition hover:text-[#3478e0]"

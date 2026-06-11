@@ -184,7 +184,7 @@ const Shop = () => {
       <HomePage />
 
       <main>
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-400 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
+        <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-400 px-6 py-20 text-white">
           <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
           <div className="absolute bottom-0 left-10 h-52 w-52 rounded-full bg-blue-900/20 blur-3xl" />
 
