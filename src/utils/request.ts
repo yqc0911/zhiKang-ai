@@ -165,6 +165,10 @@ export const getChatHistory = () => {
   return request.get<ChatHistoryResponse>('/api/chat/history')
 }
 
+export const deleteChatThread = (threadId: string) => {
+  return request.delete(`/api/chat/threads/${threadId}`)
+}
+
 export interface ConsultationArchiveResponse {
   code: number
   message: string

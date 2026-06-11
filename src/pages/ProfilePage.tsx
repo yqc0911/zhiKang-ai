@@ -32,13 +32,14 @@ const ProfilePage = () => {
     ]
 
     useEffect(() => {
-        const loadData = async () => {
+        const loadData = async (showLoading = true) => {
             const token = getToken()
             if (!token) {
                 setLoading(false)
                 return
             }
 
+            if (showLoading) setLoading(true)
             try {
                 const [profileRes, historyRes, loginStatsRes, consultationsRes] = await Promise.allSettled([
                     getUserProfile(),
@@ -74,6 +75,11 @@ const ProfilePage = () => {
         }
 
         void loadData()
+        const handleConsultationsUpdated = () => {
+            void loadData(false)
+        }
+        window.addEventListener('consultations:updated', handleConsultationsUpdated)
+        return () => window.removeEventListener('consultations:updated', handleConsultationsUpdated)
     }, [])
 
     useEffect(() => {

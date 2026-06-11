@@ -3,7 +3,7 @@ import { Bot, Image as ImageIcon, Loader2, MessageCircle, MessageSquare, Plus, S
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { message } from 'antd'
-import { getChatHistory, getToken, saveCurrentConsultationToProfile } from '../utils/request'
+import { deleteChatThread, getChatHistory, getToken, saveCurrentConsultationToProfile } from '../utils/request'
 import { setConsultationGuardState } from '../utils/consultationGuard'
 
 const IMAGE_MAX_SIZE = 5 * 1024 * 1024
@@ -179,14 +179,27 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
     setCurrentThreadId(newThread.id)
   }, [])
 
-  const deleteThread = useCallback((threadId: string) => {
-    setThreads((prev) => {
-      const next = prev.filter((thread) => thread.id !== threadId)
-      if (currentThreadId === threadId) setCurrentThreadId(next[0]?.id ?? null)
-      window.localStorage.setItem(CHAT_DELETED_THREADS_KEY, JSON.stringify(Array.from(new Set([...(JSON.parse(window.localStorage.getItem(CHAT_DELETED_THREADS_KEY) || '[]') as string[]), threadId]))))
-      return next
-    })
-  }, [currentThreadId])
+  const deleteThread = useCallback(async (threadId: string) => {
+    const previousThreads = threads
+    const nextThreads = previousThreads.filter((thread) => thread.id !== threadId)
+    const nextCurrentThreadId = currentThreadId === threadId ? (nextThreads[0]?.id ?? null) : currentThreadId
+
+    setThreads(nextThreads)
+    setCurrentThreadId(nextCurrentThreadId)
+    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ threads: nextThreads, currentThreadId: nextCurrentThreadId, hasUnsavedConversation }))
+
+    try {
+      await deleteChatThread(threadId)
+      window.dispatchEvent(new Event('consultations:updated'))
+      message.success('历史记录已删除')
+    } catch (error) {
+      console.error('删除历史记录失败:', error)
+      setThreads(previousThreads)
+      setCurrentThreadId(currentThreadId)
+      window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ threads: previousThreads, currentThreadId, hasUnsavedConversation }))
+      message.error('删除失败，请检查后端服务后重试')
+    }
+  }, [currentThreadId, hasUnsavedConversation, threads])
 
   const updateThreadTitle = useCallback((threadId: string, firstMessage: string) => {
     const title = firstMessage.slice(0, 30) + (firstMessage.length > 30 ? '...' : '')
@@ -361,7 +374,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
                     <div className="truncate text-sm font-medium text-white">{thread.title}</div>
                     <div className="text-xs text-[#89F5E7]/50">{formatDate(thread.updatedAt)}</div>
                   </div>
-                  <button onClick={(event) => { event.stopPropagation(); deleteThread(thread.id) }} className="rounded-lg p-1.5 opacity-0 transition-all hover:bg-white/10 group-hover:opacity-100">
+                  <button onClick={(event) => { event.stopPropagation(); void deleteThread(thread.id) }} className="rounded-lg p-1.5 opacity-0 transition-all hover:bg-white/10 group-hover:opacity-100">
                     <Trash2 className="h-3.5 w-3.5 text-[#89F5E7]/70" />
                   </button>
                 </div>
