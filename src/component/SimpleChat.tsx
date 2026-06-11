@@ -9,6 +9,7 @@ import { setConsultationGuardState } from '../utils/consultationGuard'
 const IMAGE_MAX_SIZE = 5 * 1024 * 1024
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const CHAT_STORAGE_KEY = 'zhikang-ai-chat-state'
+const CHAT_DELETED_THREADS_KEY = 'zhikang-ai-chat-deleted-threads'
 
 interface Message {
   id: string
@@ -65,10 +66,12 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
   useEffect(() => {
     try {
       const cached = window.localStorage.getItem(CHAT_STORAGE_KEY)
+      const deletedCached = window.localStorage.getItem(CHAT_DELETED_THREADS_KEY)
+      const deletedIds = deletedCached ? (JSON.parse(deletedCached) as string[]) : []
       if (!cached) return
       const parsed = JSON.parse(cached) as { threads?: Thread[]; currentThreadId?: string | null; hasUnsavedConversation?: boolean }
-      if (Array.isArray(parsed.threads)) setThreads(parsed.threads)
-      if (typeof parsed.currentThreadId !== 'undefined') setCurrentThreadId(parsed.currentThreadId)
+      if (Array.isArray(parsed.threads)) setThreads(parsed.threads.filter((thread) => !deletedIds.includes(thread.id)))
+      if (typeof parsed.currentThreadId !== 'undefined' && !deletedIds.includes(parsed.currentThreadId ?? '')) setCurrentThreadId(parsed.currentThreadId)
       if (typeof parsed.hasUnsavedConversation === 'boolean') setHasUnsavedConversation(parsed.hasUnsavedConversation)
     } catch (error) {
       console.warn('恢复聊天缓存失败:', error)
@@ -180,6 +183,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
     setThreads((prev) => {
       const next = prev.filter((thread) => thread.id !== threadId)
       if (currentThreadId === threadId) setCurrentThreadId(next[0]?.id ?? null)
+      window.localStorage.setItem(CHAT_DELETED_THREADS_KEY, JSON.stringify(Array.from(new Set([...(JSON.parse(window.localStorage.getItem(CHAT_DELETED_THREADS_KEY) || '[]') as string[]), threadId]))))
       return next
     })
   }, [currentThreadId])
@@ -416,7 +420,7 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
             <div className="flex items-center gap-2">
               <input type="file" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
               <button onClick={() => fileInputRef.current?.click()} className="rounded-lg p-2 hover:bg-slate-100"><ImageIcon className="h-5 w-5" /></button>
-              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} className="flex-1 rounded-xl border p-3" placeholder="输入你的问题..." />
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} className="flex-1 rounded-xl border px-3 py-2 text-sm sm:py-2.5" placeholder="输入你的问题..." />
               <button onClick={() => void handleSend()} disabled={isLoading} className="rounded-xl bg-blue-600 p-3 text-white hover:bg-blue-700 disabled:opacity-50"><Send className="h-5 w-5" /></button>
             </div>
           </div>
