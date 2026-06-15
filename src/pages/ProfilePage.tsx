@@ -139,15 +139,13 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-50 to-white flex flex-col">
-            <div className="flex-none">
-                <HomePage />
-            </div>
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+            <HomePage />
 
-            <Spin spinning={loading} className="flex-1 overflow-hidden">
-            <div className="flex-1 overflow-hidden px-4 py-4">
-                <div className="mx-auto  h-full max-w-[80vw]  lg:grid-cols-[1.05fr_0.95fr]">
-                    <Card className="h-full overflow-hidden rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+            <div className="px-4 py-4 sm:px-6 lg:px-8">
+                <Spin spinning={loading}>
+                    <div className="mx-auto max-w-7xl">
+                        <Card className="rounded-3xl border-slate-200/80 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="relative cursor-pointer group" onClick={() => setAvatarOpen(true)}>
@@ -251,9 +249,9 @@ const ProfilePage = () => {
                             )}
                         </div>
                     </Card>
-                </div>
+                    </div>
+                </Spin>
             </div>
-            </Spin>
 
             <Modal
                 title={<span className="text-lg font-semibold text-slate-800">编辑资料</span>}
