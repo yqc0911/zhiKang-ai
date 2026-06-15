@@ -193,26 +193,35 @@
   body,
   #root {
     width: 100%;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
   }
 
   body {
     @apply bg-background text-foreground;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  body::-webkit-scrollbar {
-    display: none;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   html {
     @apply font-sans;
-    scrollbar-width: none;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
-  html::-webkit-scrollbar {
-    display: none;
+  body::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgb(203 213 225 / 0.7);
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184 / 0.9);
   }
 }
