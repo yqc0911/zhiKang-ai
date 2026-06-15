@@ -433,8 +433,8 @@ const SimpleChat = ({ initialPainParts = [], initialSymptoms = [], initialPainPo
             <div className="flex items-center gap-2">
               <input type="file" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
               <button onClick={() => fileInputRef.current?.click()} className="rounded-lg p-2 hover:bg-slate-100"><ImageIcon className="h-5 w-5" /></button>
-              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} className="flex-1 rounded-xl border px-3 py-2 text-sm sm:py-2.5" placeholder="输入你的问题..." />
-              <button onClick={() => void handleSend()} disabled={isLoading} className="rounded-xl bg-blue-600 p-3 text-white hover:bg-blue-700 disabled:opacity-50"><Send className="h-5 w-5" /></button>
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} className="flex-1 rounded-xl border px-3 py-2 text-sm leading-5" style={{ height: '44px', minHeight: '44px', maxHeight: '44px' }} placeholder="输入你的问题..." />
+              <button onClick={() => void handleSend()} disabled={isLoading} className="h-11 rounded-xl bg-blue-600 px-4 text-white hover:bg-blue-700 disabled:opacity-50"><Send className="h-5 w-5" /></button>
             </div>
           </div>
         </div>
